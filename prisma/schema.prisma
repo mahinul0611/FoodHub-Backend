@@ -13,8 +13,73 @@ datasource db {
   provider = "postgresql"
 }
 
-
 model Meals {
-  id String @id @default(uuid())
- name String 
+  id          String      @id @default(uuid())
+  name        String      @db.VarChar(225)
+  categoryId  String
+  price       Int
+  quantity    Int
+  description String      @db.Text
+  providerId  String  //BetterAuth
+  status      MealsStatus @default(AVAILABLE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @default(now())
+  isOnDiet    Boolean
+  reviews     Reviews[]
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(225)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Orders {
+  id     String @id @default(uuid())
+  userId String
+
+  totalPrice    Int
+  address       String       @db.Text
+  contactNumber String       @db.VarChar(30)
+  status        OrdersStatus
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now())
+
+  @@index([status])
+}
+
+model OrderItems {
+  id        String   @id @default(uuid())
+  price     Int
+  quantity  Int
+  mealsId   String
+  orderId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Reviews {
+  id        String   @id @default(uuid())
+  ratings   Int
+  userId    String
+  mealsId   String
+  meals     Meals    @relation(fields: [mealsId], references: [id])
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@index([ratings])
+  @@map("User Reviews")
+}
+
+enum MealsStatus {
+  AVAILABLE
+  STOCKOUT
+}
+
+enum OrdersStatus {
+  PENDING
+  CANCELED
+  COMPLETED
 }

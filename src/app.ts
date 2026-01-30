@@ -7,14 +7,14 @@ import cors from "cors"
 
 const app: Application = express();
 
-app.use(express.json());
 
 app.use(cors(
-    {
+  {
     origin: process.env.APP_URL || "http://localhost:3000", //Client Side ba frontendt URL 
     credentials:true  // Betterauth cookies alada kore set kore rakhtese tai true kore diyechi
-}
+  }
 ))
+app.use(express.json());
 
 
 app.all("/api/auth/*splat", toNodeHandler(auth));

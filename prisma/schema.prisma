@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -14,37 +8,42 @@ datasource db {
 }
 
 model Meals {
-  id          String      @id @default(uuid())
-  name        String      @db.VarChar(225)
+  id          String           @id @default(uuid())
+  name        String           @db.VarChar(225)
   categoryId  String
+  category    Category         @relation(fields: [categoryId], references: [id])
+  providerId  String
+  provider    ProvidersProfile @relation(fields: [providerId], references: [id])
   price       Int
   quantity    Int
-  description String      @db.Text
-  providerId  String //BetterAuth
-  status      MealsStatus @default(AVAILABLE)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @default(now())
+  description String
+  status      MealsStatus      @default(AVAILABLE)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   isOnDiet    Boolean
   reviews     Reviews[]
+  orderItems  OrderItems[]
 }
 
 model Category {
   id        String   @id @default(uuid())
   name      String   @db.VarChar(225)
+  meals     Meals[]
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Orders {
-  id     String @id @default(uuid())
-  userId String
-
+  id            String       @id @default(uuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
   totalPrice    Int
-  address       String       @db.Text
+  address       String
   contactNumber String       @db.VarChar(30)
   status        OrdersStatus
   createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  orderItems    OrderItems[]
 
   @@index([status])
 }
@@ -54,9 +53,11 @@ model OrderItems {
   price     Int
   quantity  Int
   mealsId   String
+  meals     Meals    @relation(fields: [mealsId], references: [id])
   orderId   String
+  order     Orders   @relation(fields: [orderId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Reviews {
@@ -64,50 +65,51 @@ model Reviews {
   ratings   Int
   userId    String
   mealsId   String
-  meals     Meals    @relation(fields: [mealsId], references: [id])
-  comment   String   @db.Text
+  comment   String
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  meals     Meals    @relation(fields: [mealsId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@index([ratings])
   @@map("User Reviews")
 }
 
-enum MealsStatus {
-  AVAILABLE
-  STOCKOUT
-}
-
-enum OrdersStatus {
-  PENDING
-  CANCELED
-  COMPLETED
+model ProvidersProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  email     String
+  meals     Meals[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
-  id            String  @id
-  name          String
-  email         String
-  emailVerified Boolean @default(false)
+  id               String            @id
+  name             String
+  email            String            @unique
+  emailVerified    Boolean           @default(false)
+  providersProfile ProvidersProfile?
+  image            String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  role             Role              @default(USER)
+  phone            String?
+  status           UserStatus        @default(ACTIVATE)
+  accounts         Account[]
+  sessions         Session[]
+  orders           Orders[]
+  reviews          Reviews[]
 
-  image     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  sessions  Session[]
-  accounts  Account[]
-
-  role   Role @default(USER)
-  phone  String?
-  status  UserStatus @default(ACTIVATE)
-
-  @@unique([email])
   @@map("user")
 }
 
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -115,7 +117,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@index([userId])
   @@map("session")
 }
@@ -125,7 +126,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -135,6 +135,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("account")
@@ -152,12 +153,22 @@ model Verification {
   @@map("verification")
 }
 
+enum MealsStatus {
+  AVAILABLE
+  STOCKOUT
+}
+
+enum OrdersStatus {
+  PENDING
+  CANCELED
+  COMPLETED
+}
+
 enum Role {
   ADMIN
   USER
   PROVIDER
 }
-
 
 enum UserStatus {
   ACTIVATE

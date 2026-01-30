@@ -1,5 +1,6 @@
 import { betterAuth, string } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { emailOTP } from "better-auth/plugins"
 // If your Prisma file is located elsewhere, you can change the path
 import { prisma } from "./prisma";
 
@@ -16,6 +17,20 @@ const transporter = nodemailer.createTransport({
 });
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL,
+  socialProviders: {
+    google: {
+      prompt: "select_account consent",
+      accessType:"offline",
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      
+    },
+    facebook: {
+      clientId: process.env.FACEBOOK_CLIENT_ID as string,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
+    },
+  },
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
@@ -41,21 +56,22 @@ export const auth = betterAuth({
     autoSignIn: false,
     requireEmailVerification: true,
   },
+
   emailVerification: {
-    sendOnSignUp:true,
+    sendOnSignUp: true,
+    autoSignInAfterVerification:true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
-      
       try {
         const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
 
-      // console.log({user,url,token})
+        // console.log({user,url,token})
 
-      const info = await transporter.sendMail({
-        from: '"FoodHub" <foodhub@food.com>',
-        to: user.email,
-        subject: "Email Verification",
-        // text: "Verify your email", // Plain-text version of the message
-        html: `<!DOCTYPE html>
+        const info = await transporter.sendMail({
+          from: '"FoodHub" <foodhub@food.com>',
+          to: user.email,
+          subject: "Email Verification",
+          // text: "Verify your email", // Plain-text version of the message
+          html: `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -96,13 +112,15 @@ export const auth = betterAuth({
     </div>
   </div>
 </body>
-</html>`, 
-      });
+</html>`,
+        });
 
-      console.log("Message sent:", info.messageId);
+        console.log("Message sent:", info.messageId);
       } catch (error) {
-        console.error("Verification email sent fail")
+        console.error("Verification email sent fail");
       }
     },
   },
+
+  
 });

@@ -1,17 +1,11 @@
 import express, { Request, Response }  from "express";
-import { Router }  from "express";
+import { mealsController } from "./meals.controller";
 
 const router = express.Router();
 
+router.get("/", mealsController.getAllMeals);
 
-router.post("/meals",(req:Request,res:Response)=>{
-
-    
-
-
-
-
-})
+router.post("/",mealsController.createMeal);
 
 
 
@@ -20,4 +14,5 @@ router.post("/meals",(req:Request,res:Response)=>{
 
 
 
-export const mealsRoute= router
+
+export const mealsRouter= router

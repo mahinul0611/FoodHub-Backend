@@ -1,10 +1,14 @@
 import { betterAuth, string } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { emailOTP } from "better-auth/plugins"
+import { emailOTP } from "better-auth/plugins";
 // If your Prisma file is located elsewhere, you can change the path
 import { prisma } from "./prisma";
 
 import nodemailer from "nodemailer";
+
+
+
+
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -21,10 +25,9 @@ export const auth = betterAuth({
   socialProviders: {
     google: {
       prompt: "select_account consent",
-      accessType:"offline",
+      accessType: "offline",
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      
     },
     facebook: {
       clientId: process.env.FACEBOOK_CLIENT_ID as string,
@@ -42,6 +45,7 @@ export const auth = betterAuth({
         defaultValue: "USER",
         required: false,
       },
+
       phone: {
         type: "string",
         required: true,
@@ -49,6 +53,49 @@ export const auth = betterAuth({
     },
   },
 
+  databaseHooks: {
+    user: {
+      create: {
+
+
+        before: async (user) => {
+                // কেউ যদি চালাকি করে ADMIN হতে চায়
+                if (user.role === "ADMIN") {
+                    // আমরা তাকে জোর করে USER বানিয়ে দেব
+                    user.role = "USER";
+                    // অথবা আপনি চাইলে এরর থ্রো করতে পারেন:
+                    // throw new Error("Admin creation is not allowed!!!");
+                }
+                
+                return {
+                    data: user
+                };
+            },
+
+        after: async (data) => {
+          try {
+            const user = data as any;
+            const userRole = user.role;
+
+            if (userRole === "PROVIDER") {
+              console.log("Creating profile for:", user.email);
+
+              await prisma.providersProfile.create({
+                data: {
+                  userId: user.id,
+                  name: user.name || "New Provider", 
+                  email: user.email,
+                },
+              });
+              console.log("✅ Profile created successfully!");
+            }
+          } catch (error) {
+            console.error("❌ ERROR Creating Profile:", error);
+          }
+        },
+      },
+    },
+  },
   trustedOrigins: [process.env.APP_URL!],
 
   emailAndPassword: {
@@ -59,7 +106,7 @@ export const auth = betterAuth({
 
   emailVerification: {
     sendOnSignUp: true,
-    autoSignInAfterVerification:true,
+    autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
       try {
         const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
@@ -121,6 +168,4 @@ export const auth = betterAuth({
       }
     },
   },
-
-  
 });

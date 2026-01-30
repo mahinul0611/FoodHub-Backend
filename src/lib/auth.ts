@@ -6,7 +6,11 @@ import { prisma } from "./prisma";
 
 import nodemailer from "nodemailer";
 
-
+export enum UserRole {
+    USER="USER",
+    ADMIN="ADMIN",
+    PROVIDER="PROVIDER"
+}
 
 
 
@@ -62,9 +66,9 @@ export const auth = betterAuth({
                 // কেউ যদি চালাকি করে ADMIN হতে চায়
                 if (user.role === "ADMIN") {
                     // আমরা তাকে জোর করে USER বানিয়ে দেব
-                    user.role = "USER";
+                    // user.role = "USER";
                     // অথবা আপনি চাইলে এরর থ্রো করতে পারেন:
-                    // throw new Error("Admin creation is not allowed!!!");
+                    throw new Error("Admin creation is not allowed!!!");
                 }
                 
                 return {

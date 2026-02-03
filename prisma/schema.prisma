@@ -7,6 +7,31 @@ datasource db {
   provider = "postgresql"
 }
 
+// Enums : 
+enum MealsStatus {
+  AVAILABLE
+  STOCKOUT
+}
+
+enum OrdersStatus {
+  PLACED
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum Role {
+  ADMIN
+  USER
+  PROVIDER
+}
+
+enum UserStatus {
+  ACTIVATE
+  SUSPEND
+}
+
 model Meals {
   id          String           @id @default(uuid())
   name        String           @db.VarChar(225)
@@ -72,18 +97,18 @@ model Reviews {
   user      User     @relation(fields: [userId], references: [id])
 
   @@index([ratings])
-  @@map("User Reviews")
+  @@map("reviews")
 }
 
 model ProvidersProfile {
-  id           String   @id @default(uuid())
-  userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id])
-  name         String
-  email        String
-  meals        Meals[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  email     String
+  meals     Meals[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
@@ -151,26 +176,4 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
-}
-
-enum MealsStatus {
-  AVAILABLE
-  STOCKOUT
-}
-
-enum OrdersStatus {
-  PENDING
-  CANCELED
-  COMPLETED
-}
-
-enum Role {
-  ADMIN
-  USER
-  PROVIDER
-}
-
-enum UserStatus {
-  ACTIVATE
-  SUSPEND
 }

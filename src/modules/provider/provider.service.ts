@@ -1,5 +1,13 @@
 import { prisma } from "../../lib/prisma"; // আপনার প্রিজমা ক্লায়েন্ট পাথ চেক করুন
 
+const getAllProvider = async ()=>{
+
+  const result = await prisma.providersProfile.findMany();
+
+  return result ;
+}
+
+
 const updateProfile = async (userId: string, payload: any) => {
   // ১. আগে চেক করি ইউজার আদৌ আছে কি না
   const isUserExist = await prisma.user.findUnique({
@@ -22,5 +30,6 @@ const updateProfile = async (userId: string, payload: any) => {
 };
 
 export const providerService = {
+  getAllProvider,
   updateProfile,
 };

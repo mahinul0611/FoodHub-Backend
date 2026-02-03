@@ -8,6 +8,7 @@ import errorHandler from "./middleware/globalErrorHandler";
 import { notFound } from "./middleware/notFound";
 import { categoryRouter } from "./modules/category/category.route";
 import { providerRouter } from "./modules/provider/provider.route";
+import { customerRouter } from "./modules/customer/customer.route";
 
 
 const app: Application = express();
@@ -28,10 +29,16 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 //   res.send("Hello from Server");
 // });
 
+
+app.use("/",customerRouter)
+
+
 app.use("/category",categoryRouter)
 app.use("/meals",mealsRouter)
 
 app.use("/provider",providerRouter)
+
+
 
 
 app.use(notFound)

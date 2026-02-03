@@ -9,6 +9,7 @@ import { notFound } from "./middleware/notFound";
 import { categoryRouter } from "./modules/category/category.route";
 import { providerRouter } from "./modules/provider/provider.route";
 import { customerRouter } from "./modules/customer/customer.route";
+import { orderRouter } from "./modules/orders/order.route";
 
 
 const app: Application = express();
@@ -38,6 +39,7 @@ app.use("/meals",mealsRouter)
 
 app.use("/provider",providerRouter)
 
+app.use("/orders",orderRouter)
 
 
 

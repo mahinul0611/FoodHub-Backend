@@ -8,8 +8,8 @@ async function seedAdmin() {
         
         const adminData = {
             name: "Admin Saheb",
-            email: "admin@admin.com",
-            password: "admin1234",
+            email:process.env.ADMIN_EMAIL,
+            password: process.env.ADMIN_PASSWORD,
             phone: "0132211223344",
             role: UserRole.USER 
         };

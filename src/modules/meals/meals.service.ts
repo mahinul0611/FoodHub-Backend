@@ -1,3 +1,4 @@
+import { Meals } from "../../../generated/prisma/client"
 import { MealsWhereInput } from "../../../generated/prisma/models"
 import { prisma } from "../../lib/prisma"
 
@@ -29,7 +30,6 @@ const createMeal = async (  payload :{
 
 
 }
-
 
 const getAllMeals = async (query: any) => {
   const { searchTerm, minPrice, maxPrice, categoryId, ...filterData } = query;
@@ -98,8 +98,106 @@ const getAllMeals = async (query: any) => {
   };
 };
 
+const getMealById = async (mealId : string,)=>{
+
+const result = await prisma.meals.findUniqueOrThrow({
+  where: {
+    id:mealId 
+  },
+  include:{
+    category:{
+      select:{ 
+        name:true,
+        
+      }
+    },
+    provider:{
+      select:{
+        name:true,
+        email:true
+      }
+    },
+    reviews:true
+  }
+})
+
+return result
+
+}
+
+const updateMeals= async (
+  mealId: string,
+  data: Partial<Meals>,
+  providerId: string,
+  isProvider: boolean
+)=>{
+
+
+const mealData = await prisma.meals.findUniqueOrThrow({
+  where:{
+    id:mealId
+  },
+  select:{
+    id:true,
+    providerId:true
+  }
+  
+})
+
+
+if(!isProvider && mealData.id!==providerId){
+    throw new Error("You are not the owner of this Meal!!! ");
+}
+
+ const result = await prisma.meals.update({
+    where: {
+      id: mealId,
+    },
+    data,
+  });
+
+  return result
+
+}
+
+
+const deleteMeal = async (mealId:string, providerId:string, isProvider:boolean)=>{
+
+
+
+  const mealData = await prisma.meals.findUniqueOrThrow({
+    where: {
+      id: mealId,
+    },
+    select: {
+      id: true,
+      providerId: true,
+    },
+  });
+
+
+   if (!isProvider && mealData.providerId !== providerId) {
+    throw new Error("You are not the owner of this post!!! ");
+  }
+
+
+
+  const result = await prisma.meals.delete({
+    where:{
+      id:mealId
+    }
+  })
+
+return result
+
+}
+
+
 export const mealsService= {
     createMeal,
-    getAllMeals
+    getAllMeals,
+    getMealById,
+    updateMeals,
+    deleteMeal
 }
 

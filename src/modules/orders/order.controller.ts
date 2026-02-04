@@ -3,9 +3,7 @@ import { orderService } from "./order.service";
 
 const createOrder = async (req: Request, res: Response) => {
   try {
-    // Assuming user ID is attached to req.user by your Better Auth middleware
 
-    // console.log("Full User Object:", req.user);
 
     const userId = req.user?.id;
     if(!req.user){
@@ -15,7 +13,6 @@ const createOrder = async (req: Request, res: Response) => {
      });
 
     }
-    // console.log(userId);
     const { address, contactNumber, items } = req.body;
 
     if (!items || items.length === 0) {
@@ -28,12 +25,52 @@ const createOrder = async (req: Request, res: Response) => {
       items,
     });
 
-    return res.status(201).json(order);
+    return res.status(201).json({
+      success:true,
+      message:"Order Created Successfully",
+      data:order
+    });
   } catch (error: any) {
-    return res.status(400).json({ error: error.message });
+    return res.status(400).json({ 
+      success:false,
+      message:"Order creation Failed",
+      error: error.message });
   }
 };
 
+
+const getMyOrders= async(req:Request,res:Response)=>{
+
+
+  try {
+    
+
+    const user= req.user!
+
+
+    const result = await orderService.getMyOrders(user.id as string);
+
+
+     res.status(201).json({
+      success:true,
+      message:"Customer Order fetched Successfully",
+      data:result
+    });
+
+
+  } catch (error:any) {
+    res.status(400).json({ 
+      success:false,
+      message:"Customer Order Fetching Failed",
+      error: error.message });
+  }
+
+
+}
+
+
+
 export const orderController = {
   createOrder,
+  getMyOrders
 };

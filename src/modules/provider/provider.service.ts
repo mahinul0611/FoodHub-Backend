@@ -1,15 +1,69 @@
-import { prisma } from "../../lib/prisma"; // আপনার প্রিজমা ক্লায়েন্ট পাথ চেক করুন
+import { Orders, OrdersStatus } from "../../../generated/prisma/client";
+import { prisma } from "../../lib/prisma"; 
 
-const getAllProvider = async ()=>{
-
+const getAllProvider = async () => {
   const result = await prisma.providersProfile.findMany();
 
-  return result ;
+  return result;
+};
+
+const getProviderOrder = async (providerId: string) => {
+  const provider = await prisma.providersProfile.findUniqueOrThrow({
+    where: { id: providerId },
+  });
+
+  const result = await prisma.orders.findMany({
+    where: {
+      orderItems: {
+        some: {
+          meals: { 
+            providerId: provider.id 
+          },
+        },
+      },
+    },
+    include: {
+      orderItems: {
+        where: {
+          meals: { 
+            providerId: provider.id 
+          },
+        },
+        include: {
+          meals: true,
+        },
+      },
+      user: {
+        select: {
+          name: true,
+          phone: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return result;
+};
+
+
+const updateOrderStatus = async(orderId:string,status: OrdersStatus)=>{
+
+  const result = await prisma.orders.update({
+    where:{
+      id:orderId
+    },
+    data: {
+      status: status as OrdersStatus
+    }
+  })
+
+  return result
 }
 
 
 const updateProfile = async (userId: string, payload: any) => {
-  // ১. আগে চেক করি ইউজার আদৌ আছে কি না
   const isUserExist = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -18,10 +72,9 @@ const updateProfile = async (userId: string, payload: any) => {
     throw new Error("User not found!");
   }
 
-  // ২. প্রোফাইল আপডেট (ProvidersProfile টেবিলে)
   const result = await prisma.providersProfile.update({
     where: {
-      userId: userId, // আমরা userId দিয়ে প্রোফাইল খুঁজছি (কারণ ওয়ান-টু-ওয়ান রিলেশন)
+      userId: userId, 
     },
     data: payload,
   });
@@ -31,5 +84,7 @@ const updateProfile = async (userId: string, payload: any) => {
 
 export const providerService = {
   getAllProvider,
+  getProviderOrder,
+  updateOrderStatus,
   updateProfile,
 };

@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from "express";
+import {  Request, Response } from "express";
 import { mealsService } from "./meals.service";
 import { UserRole } from "../../lib/auth";
 
-const createMeal = async (req: Request, res: Response, next: NextFunction) => {
+const createMeal = async (req: Request, res: Response) => {
   try {
     const result = await mealsService.createMeal(req.body);
 

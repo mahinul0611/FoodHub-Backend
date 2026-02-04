@@ -39,7 +39,7 @@ model Meals {
   category    Category         @relation(fields: [categoryId], references: [id])
   providerId  String
   provider    ProvidersProfile @relation(fields: [providerId], references: [id])
-  price       Float
+  price       Decimal
   quantity    Int
   description String
   status      MealsStatus      @default(AVAILABLE)
@@ -59,28 +59,31 @@ model Category {
 }
 
 model Orders {
-  id            String       @id @default(uuid())
+  id            String            @id @default(uuid())
   userId        String
-  user          User         @relation(fields: [userId], references: [id])
-  totalPrice    Int
+  user          User              @relation(fields: [userId], references: [id])
+  providerId    String?
+  provider      ProvidersProfile? @relation(fields: [providerId], references: [id])
+  totalPrice    Decimal // Stored in cents (e.g., 1000 for $10.00)
   address       String
-  contactNumber String       @db.VarChar(30)
-  status        OrdersStatus
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  contactNumber String            @db.VarChar(30)
+  status        OrdersStatus      @default(PLACED) // Ensure you have a default
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   orderItems    OrderItems[]
 
   @@index([status])
+  @@index([userId]) // Added index for customer order history lookup
 }
 
 model OrderItems {
   id        String   @id @default(uuid())
-  price     Int
+  price     Decimal // Price at the time of purchase
   quantity  Int
   mealsId   String
   meals     Meals    @relation(fields: [mealsId], references: [id])
   orderId   String
-  order     Orders   @relation(fields: [orderId], references: [id])
+  order     Orders   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -109,6 +112,7 @@ model ProvidersProfile {
   meals     Meals[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  orders    Orders[]
 }
 
 model User {

@@ -1,17 +1,11 @@
-import express from "express";
 import { orderController } from "./order.controller";
+import { UserRole } from "../../lib/auth";
+import express from "express"
+import auth from "../../middleware/auth";
+
 
 const router = express.Router();
 
+router.post("/", auth(UserRole.USER), orderController.createOrder);
 
-router.post("/",orderController.createOrder);
-
-
-
-
-
-
-
-
-
-export const orderRouter= router
+export const orderRouter = router;

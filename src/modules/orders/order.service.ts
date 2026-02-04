@@ -1,57 +1,50 @@
-// src/modules/orders/order.service.ts
 import { prisma } from "../../lib/prisma";
-import { OrdersStatus } from "../../../generated/prisma/enums";
 
-export const createOrder = async (
-  userId: string, 
-  orderData: {
-    address: string;
-    contactNumber: string;
-    items: any[];
-  }
-) => {
-  const { address, contactNumber, items } = orderData;
+// order.service.ts
+ const createOrder = async (userId: string, data: any) => {
+  return await prisma.$transaction(async (tx) => {
+    const mealIds = data.items.map((i: any) => i.mealsId);
 
-  // ১. টোটাল প্রাইজ ক্যালকুলেট করা
-  const totalPrice = items.reduce(
-    (sum, item) => sum + item.price * item.quantity, 
-    0
-  );
-
-  const newOrder = await prisma.$transaction(async (tx) => {
-    // ২. অর্ডার টেবিল তৈরি
-    const order = await tx.orders.create({
-      data: {
-        userId,
-        totalPrice,
-        address,
-        contactNumber,
-        status: OrdersStatus.PLACED,
-        orderItems: {
-          create: items.map((item: any) => ({
-            mealsId: item.mealsId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        },
-      },
-      include: {
-        orderItems: true,
-      },
+    const meals = await tx.meals.findMany({
+      where: { id: { in: mealIds } },
     });
 
-    // ৩. স্টক আপডেট (Decrement Stock)
-    for (const item of items) {
-      await tx.meals.update({
-        where: { id: item.mealsId },
-        data: {
-          quantity: { decrement: item.quantity },
-        },
-      });
+    if (meals.length !== data.items.length) {
+      throw new Error("One or more meals not found");
     }
 
-    return order;
-  });
+    let total = 0;
+    const orderItems = data.items.map((item: any) => {
+      const meal = meals.find((m) => m.id === item.mealsId);
+      const price = Number(meal?.price || 0);
+      total += price * item.quantity;
+      
+      return {
+        mealsId: item.mealsId,
+        quantity: item.quantity,
+        price: price, 
+      };
+    });
 
-  return newOrder;
+    // Main Order Create
+    return await tx.orders.create({
+      data: {
+        userId,
+        address: data.address,
+        contactNumber: data.contactNumber,
+        totalPrice: total,
+        status: "PLACED",
+        providerId: meals[0]!.providerId, 
+        orderItems: {
+          create: orderItems,
+        },
+      },
+    });
+  }, {
+    timeout: 20000, 
+  });
 };
+
+export const orderService = {
+  createOrder
+}

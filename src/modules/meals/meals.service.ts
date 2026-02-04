@@ -1,4 +1,3 @@
-import { Meals } from "../../../generated/prisma/client"
 import { MealsWhereInput } from "../../../generated/prisma/models"
 import { prisma } from "../../lib/prisma"
 

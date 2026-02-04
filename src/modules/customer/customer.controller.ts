@@ -14,7 +14,6 @@ const getUserInfo= async (req:Request,res:Response)=>{
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  // সেশনের ভেতরেই ইউজারের সব তথ্য (user object) থাকে
   if (session) {
   const fullUser = await prisma.user.findUnique({
     where: { id: session.user.id },

@@ -1,18 +1,14 @@
-import { betterAuth, string } from "better-auth";
+import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { emailOTP } from "better-auth/plugins";
-// If your Prisma file is located elsewhere, you can change the path
 import { prisma } from "./prisma";
 
 import nodemailer from "nodemailer";
 
 export enum UserRole {
-    USER="USER",
-    ADMIN="ADMIN",
-    PROVIDER="PROVIDER"
+  USER = "USER",
+  ADMIN = "ADMIN",
+  PROVIDER = "PROVIDER",
 }
-
-
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -60,21 +56,15 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-
-
         before: async (user) => {
-                // কেউ যদি চালাকি করে ADMIN হতে চায়
-                if (user.role === "ADMIN") {
-                    // আমরা তাকে জোর করে USER বানিয়ে দেব
-                    // user.role = "USER";
-                    // অথবা আপনি চাইলে এরর থ্রো করতে পারেন:
-                    throw new Error("Admin creation is not allowed!!!");
-                }
-                
-                return {
-                    data: user
-                };
-            },
+          if (user.role === "ADMIN") {
+            throw new Error("Admin creation is not allowed!!!");
+          }
+
+          return {
+            data: user,
+          };
+        },
 
         after: async (data) => {
           try {
@@ -87,7 +77,7 @@ export const auth = betterAuth({
               await prisma.providersProfile.create({
                 data: {
                   userId: user.id,
-                  name: user.name || "New Provider", 
+                  name: user.name || "New Provider",
                   email: user.email,
                 },
               });
@@ -108,6 +98,14 @@ export const auth = betterAuth({
     requireEmailVerification: true,
   },
 
+  session: {
+    expiresIn: 60 * 60 * 24 * 30, // 30 din (Seconds e calculate kora)
+    updateAge: 60 * 60 * 24, // Din-e ekbar session update hobe
+    freshAge:0
+  },
+  advanced: {
+        useSecureCookies: false, 
+    },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,

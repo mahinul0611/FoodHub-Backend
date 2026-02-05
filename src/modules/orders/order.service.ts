@@ -1,6 +1,5 @@
 import { prisma } from "../../lib/prisma";
 
-// order.service.ts
 const createOrder = async (userId: string, data: any) => {
   return await prisma.$transaction(
     async (tx) => {
@@ -53,7 +52,7 @@ const getMyOrders= async (userId:string)=>{
 
   const result = await prisma.orders.findMany({
    where: {
-      userId: userId, // Authenticated customer id
+      userId: userId, 
     },
     include: {
       orderItems: {

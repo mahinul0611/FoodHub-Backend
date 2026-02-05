@@ -15,6 +15,6 @@ const getUserInfo= async (userId:string )=>{
 
 
 
-export const customerServcie= {
+export const meServcie= {
     getUserInfo
 }

@@ -99,8 +99,8 @@ export const auth = betterAuth({
   },
 
   session: {
-    expiresIn: 60 * 60 * 24 * 30, // 30 din (Seconds e calculate kora)
-    updateAge: 60 * 60 * 24, // Din-e ekbar session update hobe
+    expiresIn: 60 * 60 * 24 * 30, 
+    updateAge: 60 * 60 * 24, 
     freshAge:0
   },
   advanced: {

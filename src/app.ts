@@ -1,5 +1,5 @@
 import { toNodeHandler } from "better-auth/node";
-import express, { Application  } from "express";
+import express, { Application, Request, Response  } from "express";
 import { auth } from "./lib/auth";
 
 import cors from "cors"
@@ -28,9 +28,9 @@ app.use(express.json());
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
-// app.get("/", (req: Request, res: Response) => {
-//   res.send("Hello from Server");
-// });
+app.get("/", (req: Request, res: Response) => {
+  res.send("Hello from Server");
+});
 
 app.use("/admin",adminRouter)
 

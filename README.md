@@ -112,7 +112,7 @@ npm install
 CONNECTION_STR= "Your database connection String"
 PORT=5000
 
-DATABASE_URL="postgresql://neondb_owner:npg_3OWCBauZeky2@ep-lively-wave-ahuv90ug-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require&connection_limit=10&pool_timeout=20"
+DATABASE_URL="your_database_url"
 
 
 BETTER_AUTH_SECRET="your secret"

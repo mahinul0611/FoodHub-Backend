@@ -56,49 +56,48 @@ Built with **Node.js**, **Express**, **TypeScript**, **PostgreSQL**,**Prisma** a
 | Deployment     | Vercel     |
 
 ---
-
 ## 🚀 API Endpoints
 
 ### 🔑 Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/sign-up/email` | Register as Customer/Provider |
+| POST | `/api/auth/sign-in/email` | Login for all roles |
+| GET  | `/me` | Get currently logged-in user info |
 
-| Method | Endpoint                  | Permission | Description            |
-| ------ | ------------------------- | ---------- | ---------------------- |
-| POST   | `/api/auth/sign-up/email` | Public     | Register a new user    |
-| POST   | `/api/auth/sign-in/email` | Public     | Login user & get token |
+### 🍱 Meals & Categories
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET    | `/meals` | Get all meals (Query: `searchTerm`, `minPrice`) |
+| GET    | `/meals/:id` | Get single meal details |
+| POST   | `/meals` | Create a new meal (Provider only) |
+| PUT    | `/meals/:id` | Update meal details |
+| DELETE | `/meals/:id` | Remove a meal |
+| GET    | `/admin/category` | Get all food categories |
+| POST   | `/admin/category` | Create new category (Admin only) |
 
-### 🍱 Meals & Reviews (Public/Customer)
+### 🛒 Orders & Reviews
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/orders` | Create a new order (Customer) |
+| GET    | `/orders` | Get customer's order history |
+| PATCH  | `/provider/orders/:id` | Update order status (Provider) |
+| POST   | `/reviews` | Submit a meal review |
 
-| Method | Endpoint     | Permission | Description                |
-| ------ | ------------ | ---------- | -------------------------- |
-| POST   | `/meals`     | Provider   | Create Meals               |
-| GET    | `/meals`     | Public     | Get all meals with filters |
-| GET    | `/meals/:id` | Public     | Get specific meal details  |
-| GET    | `/reviews`   | Public     | View meal reviews          |
+### 🛡️ Admin Only
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET    | `/admin/stats` | Platform usage statistics |
+| GET    | `/admin/users` | List all registered users |
+| GET    | `/admin/users/:id` | View specific user details |
+| PUT    | `/admin/users/:id` | Update user status (ACTIVATE/SUSPEND) |
 
-### 👨‍🍳 Provider & Orders
-
-| Method | Endpoint | Permission | Description |
-| ------ | ------------------------- | ---------- | ---------------------- |
-|GET| `/orders` | Customer |View user-specific orders|
-| GET | /provider/orders | Provider | View incoming orders for provider|
-| PATCH| /orders/:id | Provider Update order status|
-
-### 🛡️ Admin Management
-
-| Method | Endpoint | Permission | Description |
-| ------ | ------------------------- | ---------- | ---------------------- |
-|GET |`/admin/stats`|ADMIN |View system-wide statistics|
-|GET |`/admin/users`|ADMIN |View all registered users|
-|GET |`/admin/users/:id`|ADMIN |Get specific user details|
-|GET| `/admin/category`| ADMIN|Manage food categories|
-
-## Setup & Usage Instructions
+## ⚙️ Setup & Usage Instructions
 
 ### 1️⃣ **Clone the Repository**
-
 ```bash
-git clone "https://github.com/mahinul0611/FoodHub-Backend"
-cd FoodHub-Backend
+git clone [https://github.com/mahinul0611/foodhub-backend](https://github.com/mahinul0611/foodhub-backend)
+cd foodhub-backend
 ```
 
 ### 2️⃣ **Install Dependencies**

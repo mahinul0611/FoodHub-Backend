@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsx watch src/server.ts",
-    "seed-admin":"npx tsx  src/scripts/seedAdmin.ts"
+    "seed-admin":"npx tsx  src/scripts/seedAdmin.ts",
+    "build": "tsc && npx prisma generate",
+  "vercel-build": "npx prisma generate && tsc",
+  "start": "node dist/app.js"
 
   },
   "keywords": [],

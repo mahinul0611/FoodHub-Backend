@@ -1,105 +1,100 @@
 # 🍱 FoodHub Management System (Backend)
 
-A complete backend API for managing meal ordering, provider menus, user roles, and order processing.
-Built with **Node.js**, **Express**, **TypeScript**, **PostgreSQL**,**Prisma** and **Better Auth Authentication**.
+FoodHub is a comprehensive full-stack backend solution for a multi-vendor meal ordering platform. It enables customers to discover and order meals, providers to manage their menus, and admins to oversee the entire ecosystem with role-based security.
+
+Built with **Node.js**, **Express**, **TypeScript**, **PostgreSQL**, and **BetterAuth**.
 
 ---
 
 ## 🌐 Live Deployment
 
-🔗 **API Base URL:** https://foodhub-backend-sigma.vercel.app/
+🔗 **API Base URL:** [https://foodhub-backend-sigma.vercel.app/](https://foodhub-backend-sigma.vercel.app/)  
+🔗 **Local Development:** `http://localhost:5000`
 
 ---
 
 ## 🎯 Features
 
-### 👤 **User Management**
+### 👤 **User Management & Auth**
+- **Multi-Role Support:** Separate registration and login for `Customer`, `Provider`, and `Admin`.
+- **Secure Access:** JWT-based authentication with role-based middleware to protect private routes.
+- **Profile Control:** Users can view their own info (`/me`) and Providers can update their business profiles.
 
-- User registration & login with role selection (customer, provider)
-- Session-based authentication
-- Role-based access control (RBAC) for Admin, Provider, and Customer
-- Profile management and user status tracking
-
-### 🥗 ** Meal & Menu Management**
-
-- Providers can add, update, and remove menu items
-- Browse meals with filters (cuisine, dietary preferences, price)
-- Category-based meal organization
-- Auto data normalization for prices and quantities
+### 🥗 **Meal & Category Management**
+- **Cuisine Categories:** Admin managed food categories (e.g., Kacchi, Pasta, Biriyani).
+- **Provider Menu:** Providers can Create, Update, and Delete meals in their menu.
+- **Advanced Discovery:** Search meals by name or filter by price range (`minPrice`).
 
 ### 🛒 **Ordering & Review System**
+- **Seamless Ordering:** Customers can place orders with multiple items and delivery details.
+- **Status Tracking:** Real-time order status updates (e.g., `PLACED` ➔ `PREPARING` ➔ `READY` ➔ `DELIVERED`).
+- **Feedback Loop:** Customers can leave ratings and comments on meals they have ordered.
 
-- Customers can place orders with delivery details (COD)
-- Real-time order status tracking (PLACED ➔ PREPARING ➔ READY ➔ DELIVERED)
-- Updates vehicle status automatically
-- Validation for meal availability during checkout
-- Post-delivery review and rating system for meals
-
-### 🛡️ **Admin Controls**
-
-- Comprehensive dashboard with system statistics (stats)
-- Manage all users (activate/suspend accounts)
-- Platform-wide order oversight and category management
+### 🛡️ **Admin Moderation**
+- **System Stats:** Dashboard for viewing total users, orders, and platform growth.
+- **User Control:** Manage all registered users and activate/suspend accounts as needed.
+- **Order Oversight:** Access and monitor every order placed on the platform.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer          | Technology |
-| -------------- | ---------- |
-| Language       | TypeScript |
-| Runtime        | Node.js    |
-| Framework      | Express.js |
-| Database       | PostgreSQL |
-| Auth           | BetterAuth |
-| ORM / Querying | Prisma     |
-| Deployment     | Vercel     |
+| Layer          | Technology             |
+| -------------- | ---------------------- |
+| **Language** | TypeScript             |
+| **Runtime** | Node.js                |
+| **Framework** | Express.js             |
+| **Database** | PostgreSQL             |
+| **ORM** | Prisma            |
+| **Auth** | BetterAuth                    |
+| **Deployment** | Vercel                 |
 
 ---
+
 ## 🚀 API Endpoints
 
 ### 🔑 Authentication
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/sign-up/email` | Register as Customer/Provider |
-| POST | `/api/auth/sign-in/email` | Login for all roles |
-| GET  | `/me` | Get currently logged-in user info |
+| POST | `/api/auth/sign-up/email` | Register new Customer or Provider |
+| POST | `/api/auth/sign-in/email` | Login for all roles (Customer/Provider/Admin) |
+| GET  | `/me` | Get currently logged-in user profile |
 
-### 🍱 Meals & Categories
+### 🍱 Meals & Categories (Public & Provider)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET    | `/meals` | Get all meals (Query: `searchTerm`, `minPrice`) |
-| GET    | `/meals/:id` | Get single meal details |
+| GET    | `/meals` | Get all meals with filters (`searchTerm`, `minPrice`) |
+| GET    | `/meals/:id` | Get specific meal details |
 | POST   | `/meals` | Create a new meal (Provider only) |
-| PUT    | `/meals/:id` | Update meal details |
-| DELETE | `/meals/:id` | Remove a meal |
-| GET    | `/admin/category` | Get all food categories |
-| POST   | `/admin/category` | Create new category (Admin only) |
+| PUT    | `/meals/:id` | Update meal info (Provider only) |
+| DELETE | `/meals/:id` | Delete a meal from menu |
+| GET    | `/admin/category` | View all available categories |
 
 ### 🛒 Orders & Reviews
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST   | `/orders` | Create a new order (Customer) |
-| GET    | `/orders` | Get customer's order history |
-| PATCH  | `/provider/orders/:id` | Update order status (Provider) |
-| POST   | `/reviews` | Submit a meal review |
+| GET    | `/orders` | Get current customer's order history |
+| PATCH  | `/provider/orders/:id` | Update order status (Provider only) |
+| POST   | `/reviews` | Submit a rating and review for a meal |
 
-### 🛡️ Admin Only
+### 🛡️ Admin Management
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET    | `/admin/stats` | Platform usage statistics |
-| GET    | `/admin/users` | List all registered users |
-| GET    | `/admin/users/:id` | View specific user details |
+| GET    | `/admin/stats` | View platform-wide statistics |
+| GET    | `/admin/users` | List all users on the platform |
 | PUT    | `/admin/users/:id` | Update user status (ACTIVATE/SUSPEND) |
+| POST   | `/admin/category` | Create a new category |
+
+---
 
 ## ⚙️ Setup & Usage Instructions
 
-### 1️⃣ **Clone the Repository**
+### 1️⃣ Clone the Repository
 ```bash
-git clone [https://github.com/mahinul0611/foodhub-backend](https://github.com/mahinul0611/foodhub-backend)
+git clone https://github.com/mahinul0611/foodhub-backend
 cd foodhub-backend
 ```
-
 ### 2️⃣ **Install Dependencies**
 
 ```
@@ -112,7 +107,7 @@ npm install
 CONNECTION_STR= "Your database connection String"
 PORT=5000
 
-DATABASE_URL="postgresql://neondb_owner:npg_3OWCBauZeky2@ep-lively-wave-ahuv90ug-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require&connection_limit=10&pool_timeout=20"
+DATABASE_URL="your_database_url"
 
 
 BETTER_AUTH_SECRET="your secret"

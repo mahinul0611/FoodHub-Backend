@@ -2,11 +2,7 @@ import { OrdersStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
 const createReview = async (userId: string, payload: any) => {
-
-
-
-
-
+    
   const hasOrdered = await prisma.orders.findFirst({
     where: {
       userId: userId,

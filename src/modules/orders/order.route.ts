@@ -7,7 +7,6 @@ import auth from "../../middleware/auth";
 const router = express.Router();
 
 
-router.get("/test", (req:Request, res:Response) => res.send("Admin path working!"));
 
 router.get("/",auth(UserRole.USER),orderController.getMyOrders)
 

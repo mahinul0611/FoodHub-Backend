@@ -424,16 +424,24 @@ import cors from "cors";
 import express from "express";
 
 // src/modules/meals/meals.service.ts
-var createMeal = async (payload) => {
+var createMeal = async (providerId, payload) => {
+  const provider = await prisma.providersProfile.findUnique({
+    where: {
+      userId: providerId
+    }
+  });
+  if (!provider) {
+    throw new Error("You are not allowed to create Meals");
+  }
   const result = await prisma.meals.create({
     data: {
       name: payload.name,
       description: payload.description,
-      price: payload.price,
-      quantity: payload.quantity,
+      price: Number(payload.price),
+      quantity: Number(payload.quantity),
       categoryId: payload.categoryId,
-      providerId: payload.providerId,
-      isOnDiet: payload.isOnDiet || false
+      isOnDiet: payload.isOnDiet || false,
+      providerId: provider.id
     }
   });
   return result;
@@ -493,7 +501,10 @@ var getAllMeals = async (query) => {
   });
   const resultWithAverageRating = result.map((meal) => {
     const totalReviews = meal.reviews.length;
-    const sumRatings = meal.reviews.reduce((acc, review) => acc + review.ratings, 0);
+    const sumRatings = meal.reviews.reduce(
+      (acc, review) => acc + review.ratings,
+      0
+    );
     const averageRating = totalReviews > 0 ? (sumRatings / totalReviews).toFixed(1) : "0";
     return {
       ...meal,
@@ -587,7 +598,11 @@ var mealsService = {
 // src/modules/meals/meals.controller.ts
 var createMeal2 = async (req, res) => {
   try {
-    const result = await mealsService.createMeal(req.body);
+    const user = req.user;
+    if (user?.role !== "PROVIDER" /* PROVIDER */) {
+      throw new Error("You are not allowed to Create Meals!");
+    }
+    const result = await mealsService.createMeal(user.id, req.body);
     res.status(200).json({
       success: true,
       message: "Meals Created Successfully",
@@ -596,7 +611,7 @@ var createMeal2 = async (req, res) => {
   } catch (error) {
     res.status(401).json({
       success: false,
-      message: error
+      message: error.message || "Something Went Wrong"
     });
   }
 };

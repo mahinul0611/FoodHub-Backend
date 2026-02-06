@@ -1629,6 +1629,9 @@ app.use(cors(
 ));
 app.use(express8.json());
 app.all("/api/auth/*splat", toNodeHandler(auth));
+app.get("/", (req, res) => {
+  res.send("Hello from Server");
+});
 app.use("/admin", adminRouter);
 app.use("/me", meRouter);
 app.use("/admin", categoryRouter);

@@ -1,39 +1,46 @@
-import { Meals } from "../../../generated/prisma/client"
-import { MealsWhereInput } from "../../../generated/prisma/models"
-import { prisma } from "../../lib/prisma"
+import { Meals } from "../../../generated/prisma/client";
+import { MealsWhereInput } from "../../../generated/prisma/models";
+import { prisma } from "../../lib/prisma";
 
-const createMeal = async (  payload :{
-    name: string
-    categoryId :string
-    providerId: string
-    description :string
-    price: number
-    quantity: number
-    isOnDiet: boolean
+export interface ICreateMealPayload {
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+  categoryId: string;
+  isOnDiet?: boolean;
 }
-)=>{
 
-    
-    const result = await prisma.meals.create({
-        data: {
-    name: payload.name,
-    description: payload.description,
-    price: payload.price,
-    quantity: payload.quantity,
-    categoryId: payload.categoryId,
-    providerId: payload.providerId,
-    isOnDiet: payload.isOnDiet || false, 
-  },
-        
-    });
-    return result
+const createMeal = async (providerId: string, payload: ICreateMealPayload) => {
+  const provider = await prisma.providersProfile.findUnique({
+    where: {
+      userId: providerId,
+    },
+  });
 
+  // console.log({provider})
 
-}
+  if (!provider) {
+    throw new Error("You are not allowed to create Meals");
+  }
+
+  const result = await prisma.meals.create({
+    data: {
+      name: payload.name,
+      description: payload.description,
+      price: Number(payload.price),
+      quantity: Number(payload.quantity),
+      categoryId: payload.categoryId,
+      isOnDiet: payload.isOnDiet || false,
+      providerId: provider.id,
+    },
+  });
+  return result;
+};
 
 const getAllMeals = async (query: any) => {
   const { searchTerm, minPrice, maxPrice, categoryId, ...filterData } = query;
-  
+
   const andConditions: MealsWhereInput[] = [];
 
   if (searchTerm) {
@@ -50,13 +57,13 @@ const getAllMeals = async (query: any) => {
   }
 
   if (minPrice || maxPrice) {
-  andConditions.push({
-    price: {
-      ...(minPrice ? { gte: Number(minPrice) } : {}),
-      ...(maxPrice ? { lte: Number(maxPrice) } : {}),
-    },
-  });
-}
+    andConditions.push({
+      price: {
+        ...(minPrice ? { gte: Number(minPrice) } : {}),
+        ...(maxPrice ? { lte: Number(maxPrice) } : {}),
+      },
+    });
+  }
 
   if (Object.keys(filterData).length > 0) {
     andConditions.push({
@@ -78,35 +85,38 @@ const getAllMeals = async (query: any) => {
     skip,
     take: limit,
     orderBy: {
-      createdAt: "desc", 
+      createdAt: "desc",
     },
     include: {
-      category: true, 
-      provider: true  ,
+      category: true,
+      provider: true,
       _count: {
-        select: { reviews: true } 
+        select: { reviews: true },
       },
       reviews: {
         select: {
-          ratings: true
-        }
+          ratings: true,
+        },
+      },
     },
-  }
-});
+  });
 
-const resultWithAverageRating = result.map((meal) => {
-  const totalReviews = meal.reviews.length;
-  
-  const sumRatings = meal.reviews.reduce((acc, review) => acc + review.ratings, 0);
-  const averageRating = totalReviews > 0 ? (sumRatings / totalReviews).toFixed(1) : "0";
+  const resultWithAverageRating = result.map((meal) => {
+    const totalReviews = meal.reviews.length;
 
-  return {
-    ...meal,
-    averageRating: parseFloat(averageRating), 
-    totalReviews: meal._count.reviews,
-  };
-});
+    const sumRatings = meal.reviews.reduce(
+      (acc, review) => acc + review.ratings,
+      0,
+    );
+    const averageRating =
+      totalReviews > 0 ? (sumRatings / totalReviews).toFixed(1) : "0";
 
+    return {
+      ...meal,
+      averageRating: parseFloat(averageRating),
+      totalReviews: meal._count.reviews,
+    };
+  });
 
   const total = await prisma.meals.count({ where: whereConditions });
 
@@ -120,81 +130,43 @@ const resultWithAverageRating = result.map((meal) => {
   };
 };
 
-const getMealById = async (mealId : string,)=>{
-
-const result = await prisma.meals.findUniqueOrThrow({
-  where: {
-    id:mealId 
-  },
-  include:{
-    category:{
-      select:{ 
-        name:true,
-        
-      }
-    },
-    provider:{
-      select:{
-        name:true,
-        email:true
-      }
-    },
-    reviews:true
-  }
-})
-
-const reviewsCount = result?.reviews.length || 0;
-  const averageRating = reviewsCount > 0 
-    ? result?.reviews.reduce((acc, curr) => acc + curr.ratings, 0)! / reviewsCount 
-    : 0;
-
-  return { ...result, averageRating, reviewsCount };
-
-
-
-
-}
-
-const updateMeals= async (
-  mealId: string,
-  data: Partial<Meals>,
-  providerId: string,
-  isProvider: boolean
-)=>{
-
-
-const mealData = await prisma.meals.findUniqueOrThrow({
-  where:{
-    id:mealId
-  },
-  select:{
-    id:true,
-    providerId:true
-  }
-  
-})
-
-
-if(!isProvider && mealData.id!==providerId){
-    throw new Error("You are not the owner of this Meal!!! ");
-}
-
- const result = await prisma.meals.update({
+const getMealById = async (mealId: string) => {
+  const result = await prisma.meals.findUniqueOrThrow({
     where: {
       id: mealId,
     },
-    data,
+    include: {
+      category: {
+        select: {
+          name: true,
+        },
+      },
+      provider: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+      reviews: true,
+    },
   });
 
-  return result
+  const reviewsCount = result?.reviews.length || 0;
+  const averageRating =
+    reviewsCount > 0
+      ? result?.reviews.reduce((acc, curr) => acc + curr.ratings, 0)! /
+        reviewsCount
+      : 0;
 
-}
+  return { ...result, averageRating, reviewsCount };
+};
 
-
-const deleteMeal = async (mealId:string, providerId:string, isProvider:boolean)=>{
-
-
-
+const updateMeals = async (
+  mealId: string,
+  data: Partial<Meals>,
+  providerId: string,
+  isProvider: boolean,
+) => {
   const mealData = await prisma.meals.findUniqueOrThrow({
     where: {
       id: mealId,
@@ -205,29 +177,52 @@ const deleteMeal = async (mealId:string, providerId:string, isProvider:boolean)=
     },
   });
 
+  if (!isProvider && mealData.id !== providerId) {
+    throw new Error("You are not the owner of this Meal!!! ");
+  }
 
-   if (!isProvider && mealData.providerId !== providerId) {
+  const result = await prisma.meals.update({
+    where: {
+      id: mealId,
+    },
+    data,
+  });
+
+  return result;
+};
+
+const deleteMeal = async (
+  mealId: string,
+  providerId: string,
+  isProvider: boolean,
+) => {
+  const mealData = await prisma.meals.findUniqueOrThrow({
+    where: {
+      id: mealId,
+    },
+    select: {
+      id: true,
+      providerId: true,
+    },
+  });
+
+  if (!isProvider && mealData.providerId !== providerId) {
     throw new Error("You are not the owner of this post!!! ");
   }
 
-
-
   const result = await prisma.meals.delete({
-    where:{
-      id:mealId
-    }
-  })
+    where: {
+      id: mealId,
+    },
+  });
 
-return result
+  return result;
+};
 
-}
-
-
-export const mealsService= {
-    createMeal,
-    getAllMeals,
-    getMealById,
-    updateMeals,
-    deleteMeal
-}
-
+export const mealsService = {
+  createMeal,
+  getAllMeals,
+  getMealById,
+  updateMeals,
+  deleteMeal,
+};

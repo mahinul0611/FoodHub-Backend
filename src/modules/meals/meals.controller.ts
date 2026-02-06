@@ -4,17 +4,24 @@ import { UserRole } from "../../lib/auth";
 
 const createMeal = async (req: Request, res: Response) => {
   try {
-    const result = await mealsService.createMeal(req.body);
+
+    const user= req.user;
+
+    if(user?.role!==UserRole.PROVIDER){
+      throw new Error("You are not allowed to Create Meals!")
+    }
+
+    const result = await mealsService.createMeal(user.id,req.body);
 
     res.status(200).json({
       success: true,
       message: "Meals Created Successfully",
       data: result,
     });
-  } catch (error) {
+  } catch (error:any) {
     res.status(401).json({
       success: false,
-      message: error,
+      message: error.message || "Something Went Wrong",
     });
   }
 };

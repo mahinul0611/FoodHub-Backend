@@ -1630,7 +1630,7 @@ app.use(cors(
 app.use(express8.json());
 app.all("/api/auth/*splat", toNodeHandler(auth));
 app.get("/", (req, res) => {
-  res.send("Hello from Server");
+  res.send("Hello from FoodHub Server");
 });
 app.use("/admin", adminRouter);
 app.use("/me", meRouter);

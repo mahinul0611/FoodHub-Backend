@@ -114,8 +114,35 @@ const getAdminStats = async (req: Request, res: Response) => {
   }
 };
 
+ const getAllOrders = async (req: Request, res: Response) => {
+  try {
+   
+
+    const user= req.user
+
+    if(user?.role!== UserRole.ADMIN){
+      throw new Error("Unauthorized!")
+    }
+    
+    const result = await adminService.getAllOrders();
+
+    res.status(200).json({
+      success: true,
+      message: "Order List fetched Successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: "Order List not Found",
+    });
+  }
+};
+
+
 export const adminController = {
   getAllUsers,
+  getAllOrders,
   getUserById,
   getAdminStats,
   updateUserStatus,

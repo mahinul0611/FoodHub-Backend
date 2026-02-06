@@ -82,9 +82,31 @@ const getAllMeals = async (query: any) => {
     },
     include: {
       category: true, 
-      provider: true  
+      provider: true  ,
+      _count: {
+        select: { reviews: true } 
+      },
+      reviews: {
+        select: {
+          ratings: true
+        }
     },
-  });
+  }
+});
+
+const resultWithAverageRating = result.map((meal) => {
+  const totalReviews = meal.reviews.length;
+  
+  const sumRatings = meal.reviews.reduce((acc, review) => acc + review.ratings, 0);
+  const averageRating = totalReviews > 0 ? (sumRatings / totalReviews).toFixed(1) : "0";
+
+  return {
+    ...meal,
+    averageRating: parseFloat(averageRating), 
+    totalReviews: meal._count.reviews,
+  };
+});
+
 
   const total = await prisma.meals.count({ where: whereConditions });
 
@@ -94,7 +116,7 @@ const getAllMeals = async (query: any) => {
       limit,
       total,
     },
-    data: result,
+    data: resultWithAverageRating,
   };
 };
 
@@ -121,7 +143,15 @@ const result = await prisma.meals.findUniqueOrThrow({
   }
 })
 
-return result
+const reviewsCount = result?.reviews.length || 0;
+  const averageRating = reviewsCount > 0 
+    ? result?.reviews.reduce((acc, curr) => acc + curr.ratings, 0)! / reviewsCount 
+    : 0;
+
+  return { ...result, averageRating, reviewsCount };
+
+
+
 
 }
 

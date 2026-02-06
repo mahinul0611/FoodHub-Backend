@@ -19,8 +19,6 @@ const getAllUsers = async () => {
 };
 
 const updateUserStatus = async (userId: string, status: string) => {
-
-
   const user = await prisma.user.findUniqueOrThrow({
     where: {
       id: userId,
@@ -85,8 +83,56 @@ const getAdminStats = async () => {
   };
 };
 
+const getAllOrders = async () => {
+  const [
+    totalCustomers,
+    totalProviders,
+    totalOrders,
+    totalDelivered,
+    totalCancelled,
+    totalRevenue,
+  ] = await Promise.all([
+    prisma.user.count({ where: { role: UserRole.USER } }),
+    prisma.user.count({ where: { role: UserRole.PROVIDER } }),
+    prisma.orders.count(),
+    prisma.orders.count({
+      where: { status: "DELIVERED" },
+    }),
+
+    prisma.orders.count({
+      where: { status: "CANCELLED" },
+    }),
+    prisma.orders.aggregate({
+      where: { status: "DELIVERED" },
+      _sum: { totalPrice: true },
+    }),
+  ]);
+
+  const result = await prisma.orders.findMany({
+    include: {
+      user: { select: { name: true, email: true } },
+      orderItems: {
+        include: {
+          meals: { select: { name: true, price: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  return {
+    result,
+    totalCustomers,
+    totalProviders,
+    totalOrders,
+    totalDelivered,
+    totalCancelled,
+    revenue: totalRevenue._sum.totalPrice || 0,
+  };
+};
+
 export const adminService = {
   getAllUsers,
+  getAllOrders,
   getUserById,
   getAdminStats,
   updateUserStatus,

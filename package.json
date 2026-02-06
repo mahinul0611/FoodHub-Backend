@@ -2,15 +2,13 @@
   "name": "backendfoodhub",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsx watch src/server.ts",
-    "seed-admin":"npx tsx  src/scripts/seedAdmin.ts",
-    "build": "tsc && npx prisma generate",
-  "vercel-build": "npx prisma generate && tsc",
-  "start": "node dist/app.js"
-
+    "seed-admin": "npx tsx  src/scripts/seedAdmin.ts",
+    "build": "prisma generate && tsup src/index.ts --format esm --platform node --target node20 --outDir api --external pg-native",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +21,7 @@
     "@types/nodemailer": "^7.0.9",
     "@types/pg": "^8.16.0",
     "prisma": "^7.3.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },

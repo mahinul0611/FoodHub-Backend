@@ -4,8 +4,8 @@
   "description": "",
   "main": "app.ts",
   "scripts": {
-  "build": "prisma generate && tsup src/server.ts --format cjs --outDir dist --clean",
-  "start": "node dist/server.cjs", 
+  "build": "prisma generate && tsup src/server.ts --format esm --outDir dist --clean",
+  "start": "node dist/server.js",
   "postinstall": "prisma generate"
   },
   "keywords": [],

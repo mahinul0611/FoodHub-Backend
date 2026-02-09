@@ -16,7 +16,9 @@ const createReview= async (req:Request,res:Response)=>{
             throw new Error("You must login before creating Reviews!")
         }
 
-        // const{payload}=req.body
+
+ 
+
 
 
         const result = await reviewService.createReview(user.id as string,req.body)

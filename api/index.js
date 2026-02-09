@@ -1263,7 +1263,6 @@ var orderController = {
 // src/modules/orders/order.route.ts
 import express4 from "express";
 var router4 = express4.Router();
-router4.get("/test", (req, res) => res.send("Admin path working!"));
 router4.get("/", auth_default("USER" /* USER */), orderController.getMyOrders);
 router4.post("/", auth_default("USER" /* USER */), orderController.createOrder);
 var orderRouter = router4;
@@ -1565,6 +1564,9 @@ import express7 from "express";
 
 // src/modules/reviews/review.service.ts
 var createReview = async (userId, payload) => {
+  if (payload.ratings < 1 || payload.ratings > 5) {
+    throw new Error("Rating must be between 1 and 5");
+  }
   const hasOrdered = await prisma.orders.findFirst({
     where: {
       userId,

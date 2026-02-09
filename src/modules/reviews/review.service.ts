@@ -2,10 +2,12 @@ import { OrdersStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
 const createReview = async (userId: string, payload: any) => {
+    
 
 
-
-
+  if (payload.ratings < 1 || payload.ratings > 5) {
+    throw new Error("Rating must be between 1 and 5");
+  }
 
   const hasOrdered = await prisma.orders.findFirst({
     where: {

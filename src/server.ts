@@ -7,9 +7,9 @@ async function main() {
   try {
     await prisma.$connect();
     console.log("Connected to database successfully");
-    app.listen(PORT, () => {
-      console.log(`Server is running ong http://localhost:${PORT}`);
-    });
+    app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT}`);
+});
   } catch (error) {
     console.error(error);
     await prisma.$disconnect();

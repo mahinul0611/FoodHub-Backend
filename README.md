@@ -155,4 +155,4 @@ http://localhost:5000/
 
 ## 🌐 Live Deployment
 
-🔗 https://foodhub-backend-sigma.vercel.app
+🔗 https://foodhub-backend-5.onrender.com/

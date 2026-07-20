@@ -169,7 +169,7 @@ export const auth = betterAuth({
 
         console.log("Message sent:", info.messageId);
       } catch (error) {
-        console.error("Verification email sent fail");
+        console.error("Verification email sent fail",error);
       }
     },
   },

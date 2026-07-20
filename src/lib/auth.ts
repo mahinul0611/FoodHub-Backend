@@ -41,6 +41,9 @@ export const auth = betterAuth({
       clientId: process.env.FACEBOOK_CLIENT_ID as string,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
       redirectURI: process.env.FACEBOOK_REDIRECT_URI as string,
+      	mapProfileToUser: () => ({
+		emailVerified: true, // 👈 Facebook user auto-verified hobe
+	}),
     },
   },
   database: prismaAdapter(prisma, {

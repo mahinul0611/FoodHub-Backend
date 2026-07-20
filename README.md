@@ -8,7 +8,7 @@ Built with **Node.js**, **Express**, **TypeScript**, **PostgreSQL**, and **Bette
 
 ## 🌐 Live Deployment
 
-🔗 **API Base URL:** [https://foodhub-backend-sigma.vercel.app/](https://foodhub-backend-sigma.vercel.app/)  
+🔗 **API Base URL:** [https://foodhub-backend-5.onrender.com/](https://foodhub-backend-5.onrender.com/)  
 🔗 **Local Development:** `http://localhost:5000`
 
 ---
@@ -155,4 +155,4 @@ http://localhost:5000/
 
 ## 🌐 Live Deployment
 
-🔗 https://foodhub-backend-sigma.vercel.app
+🔗 https://foodhub-backend-5.onrender.com/

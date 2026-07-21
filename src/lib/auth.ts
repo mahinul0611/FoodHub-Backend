@@ -183,19 +183,25 @@ export const auth = betterAuth({
 //     },
 sendVerificationEmail: async ({ user, url }) => {
     try {
-        await fetch("https://api.brevo.com/v3/smtp/email", {
+        const res = await fetch("https://api.brevo.com/v3/smtp/email", {
             method: "POST",
             headers: {
                 "api-key": process.env.BREVO_API_KEY as string,
                 "content-type": "application/json",
             },
             body: JSON.stringify({
-                sender: { name: "FoodHub", email: "mahinulislam0611@gmail.com" },
+                sender: { name: "FoodHub", email: "tomar-gmail@gmail.com" },
                 to: [{ email: user.email }],
                 subject: "Verify your FoodHub email",
                 htmlContent: `<p>Welcome to FoodHub! Click the link to verify your email:</p><p><a href="${url}">Verify email</a></p>`,
             }),
         });
+        const body = await res.text();
+        if (!res.ok) {
+            console.log("Brevo email failed:", res.status, body);
+        } else {
+            console.log("Brevo email sent:", body);
+        }
     } catch (err) {
         console.log("Verification email sent fail", err);
     }

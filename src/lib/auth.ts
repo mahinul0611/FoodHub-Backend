@@ -190,7 +190,7 @@ sendVerificationEmail: async ({ user, url }) => {
                 "content-type": "application/json",
             },
             body: JSON.stringify({
-                sender: { name: "FoodHub", email: "tomar-gmail@gmail.com" },
+                sender: { name: "FoodHub", email: "mahinulislam0611@gmail.com" },
                 to: [{ email: user.email }],
                 subject: "Verify your FoodHub email",
                 htmlContent: `<p>Welcome to FoodHub! Click the link to verify your email:</p><p><a href="${url}">Verify email</a></p>`,

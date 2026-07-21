@@ -128,7 +128,7 @@ export const auth = betterAuth({
        sendVerificationEmail: async ({ user, url }) => {
         try {
             const info = await transporter.sendMail({
-                from: `"FoodHub" <b2bb7e001@smtp-brevo.com>`,
+                from: `"FoodHub" <mahinulislam0611@gmail.com>`,
                 to: user.email,
                 subject: "Verify your FoodHub email",
                 html: `<p>Welcome to FoodHub!</p><p>Click the link below to verify your email:</p><p><a href="${url}">Verify email</a></p>`,

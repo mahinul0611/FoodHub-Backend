@@ -11,18 +11,18 @@ export enum UserRole {
 }
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // Use true for port 465, false for port 587
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false,
   auth: {
-    user: process.env.APP_USER,
-    pass: process.env.APP_PASSWORD,
+    user: process.env.SMTP_USER || process.env.APP_USER,
+    pass: process.env.SMTP_PASSWORD || process.env.APP_PASSWORD,
   },
 });
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins: [process.env.APP_URL, "http://localhost:3000" ],
+  trustedOrigins: [process.env.APP_URL!],
   account: {
 	accountLinking: {
 		enabled: true,
@@ -102,12 +102,12 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: [process.env.APP_URL!],
+  // trustedOrigins: [process.env.APP_URL!],
 
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,
-    requireEmailVerification: false,
+    requireEmailVerification: true,
   },
 
   session: {

@@ -12,6 +12,7 @@ import { orderRouter } from "./modules/orders/order.route";
 import { adminRouter } from "./modules/admins/admin.route";
 import { meRouter } from "./modules/me/me.route";
 import { reviewRouter } from "./modules/reviews/review.route";
+import { categoryController } from "./modules/category/category.controller";
 
 
 const app: Application = express();
@@ -36,6 +37,7 @@ app.use("/admin",adminRouter)
 
 app.use("/me",meRouter)
 
+app.get("/category", categoryController.getAllCategory);
 
 app.use("/admin",categoryRouter)
 app.use("/meals",mealsRouter)

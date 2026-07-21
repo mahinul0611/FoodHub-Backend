@@ -12,8 +12,8 @@ export enum UserRole {
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // Use true for port 465, false for port 587
+  port: 465,
+  secure: true, // Use true for port 465, false for port 587
   auth: {
     user: process.env.APP_USER,
     pass: process.env.APP_PASSWORD,
@@ -121,90 +121,94 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
-//     sendVerificationEmail: async ({ user, url, token }, request) => {
-//       try {
-//         const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
 
-//         // console.log({user,url,token})
+    sendVerificationEmail: async ({ user, url, token }, request) => {
+      try {
+        const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
 
-//         const info = await transporter.sendMail({
-//           from: '"FoodHub" <foodhub@food.com>',
-//           to: user.email,
-//           subject: "Email Verification",
-//           // text: "Verify your email", // Plain-text version of the message
-//           html: `<!DOCTYPE html>
-// <html>
-// <head>
-//   <meta charset="utf-8">
-//   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//   <title>Email Verification</title>
-//   <style>
-//     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-//     .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-//     .header { background-color: #ff4757; padding: 30px; text-align: center; color: white; }
-//     .content { padding: 30px; line-height: 1.6; color: #333333; }
-//     .button-container { text-align: center; margin-top: 30px; }
-//     .verify-button { background-color: #ff4757; color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; }
-//     .footer { background-color: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #777777; }
-//   </style>
-// </head>
-// <body>
-//   <div class="container">
-//     <div class="header">
-//       <h1>FoodHub</h1>
-//     </div>
-//     <div class="content">
-//       <h2>Welcome to FoodHub!</h2>
-//       <p>Hello,${user.name}</p>
-//       <p>Thank you for signing up for FoodHub. We're excited to have you join our food delivery community! To get started, please verify your email address by clicking the button below.</p>
+        console.log({user,url,token})
+
+        const info = await transporter.sendMail({
+          from: '"FoodHub" <mahinulislam0611@gmail.com>',
+          to: user.email,
+          subject: "Email Verification",
+          text: "Verify your email", // Plain-text version of the message
+          html: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .header { background-color: #ff4757; padding: 30px; text-align: center; color: white; }
+    .content { padding: 30px; line-height: 1.6; color: #333333; }
+    .button-container { text-align: center; margin-top: 30px; }
+    .verify-button { background-color: #ff4757; color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; }
+    .footer { background-color: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #777777; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>FoodHub</h1>
+    </div>
+    <div class="content">
+      <h2>Welcome to FoodHub!</h2>
+      <p>Hello,${user.name}</p>
+      <p>Thank you for signing up for FoodHub. We're excited to have you join our food delivery community! To get started, please verify your email address by clicking the button below.</p>
       
-//       <div class="button-container">
-//         <a href="${verificationUrl}" class="verify-button">Verify Email Address</a>
-//       </div>
+      <div class="button-container">
+        <a href="${verificationUrl}" class="verify-button">Verify Email Address</a>
+      </div>
 
-//       <p style="margin-top: 30px;">If the button above doesn't work, you can also copy and paste the following link into your browser:</p>
-//       <p style="word-break: break-all; color: #ff4757; font-size: 13px;">${verificationUrl}</p>
+      <p style="margin-top: 30px;">If the button above doesn't work, you can also copy and paste the following link into your browser:</p>
+      <p style="word-break: break-all; color: #ff4757; font-size: 13px;">${verificationUrl}</p>
       
-//       <p>This link will expire in 24 hours. If you did not create an account, no further action is required.</p>
-//     </div>
-//     <div class="footer">
-//       <p>&copy; 2026 FoodHub Delivery Service. All rights reserved.</p>
-//       <p>Dhaka, Bangladesh</p>
-//     </div>
-//   </div>
-// </body>
-// </html>`,
-//         });
-
-//         console.log("Message sent:", info.messageId);
-//       } catch (error) {
-//         console.error("Verification email sent fail",error);
-//       }
-//     },
-sendVerificationEmail: async ({ user, url }) => {
-    try {
-        const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-            method: "POST",
-            headers: {
-                "api-key": process.env.BREVO_API_KEY as string,
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({
-                sender: { name: "FoodHub", email: "mahinulislam0611@gmail.com" },
-                to: [{ email: user.email }],
-                subject: "Verify your FoodHub email",
-                htmlContent: `<p>Welcome to FoodHub! Click the link to verify your email:</p><p><a href="${url}">Verify email</a></p>`,
-            }),
+      <p>This link will expire in 24 hours. If you did not create an account, no further action is required.</p>
+    </div>
+    <div class="footer">
+      <p>&copy; 2026 FoodHub Delivery Service. All rights reserved.</p>
+      <p>Dhaka, Bangladesh</p>
+    </div>
+  </div>
+</body>
+</html>`,
         });
-        const body = await res.text();
-        if (!res.ok) {
-            console.log("Brevo email failed:", res.status, body);
-        } else {
-            console.log("Brevo email sent:", body);
-        }
-    } catch (err) {
-        console.log("Verification email sent fail", err);
-    }
-},
+
+        console.log("Message sent:", info.messageId);
+      } catch (error) {
+        console.error("Verification email sent fail",error);
+      }
+    },
+
+
+
+// sendVerificationEmail: async ({ user, url }) => {
+//     try {
+//         const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+//             method: "POST",
+//             headers: {
+//                 "api-key": process.env.BREVO_API_KEY as string,
+//                 "content-type": "application/json",
+//             },
+//             body: JSON.stringify({
+//                 sender: { name: "FoodHub", email: "tomar-gmail@gmail.com" },
+//                 to: [{ email: user.email }],
+//                 subject: "Verify your FoodHub email",
+//                 htmlContent: `<p>Welcome to FoodHub! Click the link to verify your email:</p><p><a href="${url}">Verify email</a></p>`,
+//             }),
+//         });
+//         const body = await res.text();
+//         if (!res.ok) {
+//             console.log("Brevo email failed:", res.status, body);
+//         } else {
+//             console.log("Brevo email sent:", body);
+//         }
+//     } catch (err) {
+//         console.log("Verification email sent fail", err);
+//     }
+// },
   },
 });

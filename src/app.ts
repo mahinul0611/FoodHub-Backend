@@ -30,7 +30,7 @@ app.use(express.json());
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello from FoodHub Server");
+    res.send("Hello from FoodHub Server v7");
 });
 
 app.use("/admin",adminRouter)

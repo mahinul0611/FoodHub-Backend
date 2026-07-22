@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
-
+import { APIError } from "better-auth/api";
 import nodemailer from "nodemailer";
 
 export enum UserRole {
@@ -103,6 +103,22 @@ export const auth = betterAuth({
           }
         },
       },
+
+
+         session: {
+        create: {
+            before: async (session) => {
+                const user = await prisma.user.findUnique({
+                    where: { id: session.userId },
+                });
+                if (user?.status === "SUSPEND") {
+                    throw new APIError("FORBIDDEN", {
+                        message: "Your account has been suspended. Contact support.",
+                    });
+                }
+            },
+        },
+    },
     },
   },
   // trustedOrigins: [process.env.APP_URL!],

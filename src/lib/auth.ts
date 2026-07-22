@@ -130,6 +130,14 @@ export const auth = betterAuth({
     autoSignIn: false,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
+const link =
+        process.env.APP_URL && process.env.BETTER_AUTH_URL
+            ? url.replace(
+                  process.env.BETTER_AUTH_URL,
+                  `${process.env.APP_URL}/backend-api`,
+              )
+            : url;
+
         try {
             const info = await transporter.sendMail({
                 from: '"FoodHub" <mahinulislam0611@gmail.com>',
@@ -155,15 +163,15 @@ export const auth = betterAuth({
         <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
           <tr>
             <td align="center">
-              <a href="${url}" style="display:inline-block;background-color:#ea580c;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 36px;border-radius:10px;">
+              <a href="${link}" style="display:inline-block;background-color:#ea580c;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 36px;border-radius:10px;">
                 🔒 Reset my password
               </a>
             </td>
           </tr>
         </table>
         <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#a8a29e;">
-          Button kaj na korle ei link ta browser e paste koro:<br/>
-          <a href="${url}" style="color:#ea580c;word-break:break-all;">${url}</a>
+          If the button doesn't work, copy and paste this link into your browser:<br/>
+          <a href="${link}" style="color:#ea580c;word-break:break-all;">${link}</a>
         </p>
         <p style="margin:16px 0 0;padding:12px;background-color:#fef3c7;border-radius:8px;font-size:12px;line-height:1.5;color:#92400e;">
           ⚠️ If you didn't request a password reset, you can safely ignore this email — your password will stay unchanged.
@@ -198,11 +206,19 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
 
        sendVerificationEmail: async ({ user, url }) => {
+const link =
+        process.env.APP_URL && process.env.BETTER_AUTH_URL
+            ? url.replace(
+                  process.env.BETTER_AUTH_URL,
+                  `${process.env.APP_URL}/backend-api`,
+              )
+            : url;
+
         try {
             const info = await transporter.sendMail({
                 from: `"FoodHub" <mahinulislam0611@gmail.com>`,
                 to: user.email,
-                subject: `Your FoodHub verification link (${new Date().toLocaleTimeString()})`,
+               subject: "Confirm your FoodHub account",
                                 html: `
 <div style="margin:0;padding:24px 12px;background-color:#f5f5f4;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e7e5e4;">
@@ -223,15 +239,15 @@ export const auth = betterAuth({
         <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
           <tr>
             <td align="center">
-              <a href="${url}" style="display:inline-block;background-color:#ea580c;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 36px;border-radius:10px;">
+              <a href="${link}" style="display:inline-block;background-color:#ea580c;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 36px;border-radius:10px;">
                 ✅ Verify my email
               </a>
             </td>
           </tr>
         </table>
         <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#a8a29e;">
-          Button kaj na korle ei link ta browser e paste koro:<br/>
-          <a href="${url}" style="color:#ea580c;word-break:break-all;">${url}</a>
+          If the button doesn't work, copy and paste this link into your browser:<br/>
+          <a href="${link}" style="color:#ea580c;word-break:break-all;">${link}</a>
         </p>
       </td>
     </tr>

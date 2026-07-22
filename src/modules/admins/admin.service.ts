@@ -19,13 +19,10 @@ const getAllUsers = async () => {
 };
 
 const updateUserStatus = async (userId: string, status: UserStatus) => {
-  const user = await prisma.user.update({
+  const user = await prisma.user.findUniqueOrThrow({
     where: {
       id: userId,
     },
-    data: {
-      status: status as UserStatus
-    }
   });
 
   if (!user) {
@@ -35,7 +32,7 @@ const updateUserStatus = async (userId: string, status: UserStatus) => {
   const result = await prisma.user.update({
     where: { id: userId },
     data: {
-      status: status as any,
+      status: status as UserStatus,
     },
   });
 

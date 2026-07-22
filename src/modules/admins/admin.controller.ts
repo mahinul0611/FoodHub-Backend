@@ -78,7 +78,7 @@ const updateUserStatus = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      message: "User Status Update Successfull",
+      message: "User Status Updated Successfull",
       data: result,
     });
   } catch (error) {

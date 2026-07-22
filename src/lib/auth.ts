@@ -152,7 +152,7 @@ export const auth = betterAuth({
 
       try {
         const info = await transporter.sendMail({
-          from: '"FoodHub" <mahinulislam0611@gmail.com>',
+          from: '"FoodHub" <noreply@mahinulislam2208054.me>',
           to: user.email,
           subject: "Reset your FoodHub password",
           html: `
@@ -228,7 +228,7 @@ export const auth = betterAuth({
 
       try {
         const info = await transporter.sendMail({
-          from: `"FoodHub" <mahinulislam0611@gmail.com>`,
+          from: `"FoodHub" <noreply@mahinulislam2208054.me>`,
           to: user.email,
           subject: "Confirm your FoodHub account",
           html: `

@@ -25,16 +25,18 @@ const updateUserStatus = async (userId: string, status: UserStatus) => {
     },
   });
 
-  if (!user) {
-    throw new Error("No user found with this ID");
-  }
-
   const result = await prisma.user.update({
     where: { id: userId },
     data: {
       status: status as UserStatus,
     },
   });
+
+  if (status === "SUSPEND") {
+    await prisma.session.deleteMany({
+      where: { userId: userId },
+    });
+  }
 
   return result;
 };

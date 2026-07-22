@@ -164,7 +164,14 @@ export const auth = betterAuth({
                 subject: "Verify your FoodHub email",
                 html: `<p>Welcome to FoodHub!</p><p>Click the link below to verify your email:</p><p><a href="${url}">Verify email</a></p>`,
             });
-            console.log("Verification email sent:", info.messageId);
+            console.log(
+    "Verification email sent:",
+    info.messageId,
+    "| host:",
+    process.env.SMTP_HOST || "gmail-fallback",
+    "| response:",
+    info.response,
+);
         } catch (err) {
             console.log("Verification email sent fail", err);
         }

@@ -202,7 +202,7 @@ export const auth = betterAuth({
             const info = await transporter.sendMail({
                 from: `"FoodHub" <mahinulislam0611@gmail.com>`,
                 to: user.email,
-                subject: "Verify your FoodHub email",
+                subject: `Your FoodHub verification link (${new Date().toLocaleTimeString()})`,
                                 html: `
 <div style="margin:0;padding:24px 12px;background-color:#f5f5f4;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e7e5e4;">

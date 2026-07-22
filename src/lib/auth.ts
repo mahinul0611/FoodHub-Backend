@@ -105,7 +105,10 @@ export const auth = betterAuth({
       },
 
 
-         session: {
+   
+    },
+
+          session: {
         create: {
             before: async (session) => {
                 const user = await prisma.user.findUnique({
@@ -118,7 +121,6 @@ export const auth = betterAuth({
                 }
             },
         },
-    },
     },
   },
   // trustedOrigins: [process.env.APP_URL!],

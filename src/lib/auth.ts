@@ -10,7 +10,7 @@ export enum UserRole {
   PROVIDER = "PROVIDER",
 }
 
-const transporter = nodemailer.createTransport({
+export const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: Number(process.env.SMTP_PORT) || 587,
   secure: false,
@@ -22,16 +22,15 @@ const transporter = nodemailer.createTransport({
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins: [
-    process.env.APP_URL,
-    "http://localhost:3000",
-].filter(Boolean) as string[],
+  trustedOrigins: [process.env.APP_URL, "http://localhost:3000"].filter(
+    Boolean,
+  ) as string[],
   account: {
-	accountLinking: {
-		enabled: true,
-		trustedProviders: ["google", "facebook"],
-	},
-},
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "facebook"],
+    },
+  },
   socialProviders: {
     google: {
       prompt: "select_account consent",
@@ -44,9 +43,9 @@ export const auth = betterAuth({
       clientId: process.env.FACEBOOK_CLIENT_ID as string,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
       redirectURI: process.env.FACEBOOK_REDIRECT_URI as string,
-      	mapProfileToUser: () => ({
-		emailVerified: true, // 👈 Facebook user auto-verified hobe
-	}),
+      mapProfileToUser: () => ({
+        emailVerified: true, // 👈 Facebook user auto-verified hobe
+      }),
     },
   },
   database: prismaAdapter(prisma, {
@@ -64,6 +63,12 @@ export const auth = betterAuth({
       phone: {
         type: "string",
         required: true,
+      },
+      phoneVerified: {
+        type: "boolean",
+        defaultValue: false,
+        required: false,
+        input: false,
       },
     },
   },
@@ -103,24 +108,31 @@ export const auth = betterAuth({
           }
         },
       },
-
-
-   
+      update: {
+        before: async (data) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const updates = data as any;
+          if (typeof updates.phone === "string") {
+            return { data: { ...updates, phoneVerified: false } };
+          }
+          return { data: updates };
+        },
+      },
     },
 
-          session: {
-        create: {
-            before: async (session) => {
-                const user = await prisma.user.findUnique({
-                    where: { id: session.userId },
-                });
-                if (user?.status === "SUSPEND") {
-                    throw new APIError("FORBIDDEN", {
-                        message: "Your account has been suspended. Contact support.",
-                    });
-                }
-            },
+    session: {
+      create: {
+        before: async (session) => {
+          const user = await prisma.user.findUnique({
+            where: { id: session.userId },
+          });
+          if (user?.status === "SUSPEND") {
+            throw new APIError("FORBIDDEN", {
+              message: "Your account has been suspended. Contact support.",
+            });
+          }
         },
+      },
     },
   },
   // trustedOrigins: [process.env.APP_URL!],
@@ -130,20 +142,20 @@ export const auth = betterAuth({
     autoSignIn: false,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-const link =
+      const link =
         process.env.APP_URL && process.env.BETTER_AUTH_URL
-            ? url.replace(
-                  process.env.BETTER_AUTH_URL,
-                  `${process.env.APP_URL}/backend-api`,
-              )
-            : url;
+          ? url.replace(
+              process.env.BETTER_AUTH_URL,
+              `${process.env.APP_URL}/backend-api`,
+            )
+          : url;
 
-        try {
-            const info = await transporter.sendMail({
-                from: '"FoodHub" <mahinulislam0611@gmail.com>',
-                to: user.email,
-                subject: "Reset your FoodHub password",
-                               html: `
+      try {
+        const info = await transporter.sendMail({
+          from: '"FoodHub" <mahinulislam0611@gmail.com>',
+          to: user.email,
+          subject: "Reset your FoodHub password",
+          html: `
 <div style="margin:0;padding:24px 12px;background-color:#f5f5f4;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e7e5e4;">
     <tr>
@@ -185,41 +197,41 @@ const link =
     </tr>
   </table>
 </div>`,
-            });
-            console.log("Reset password email sent:", info.messageId);
-        } catch (err) {
-            console.log("Reset password email sent fail", err);
-        }
+        });
+        console.log("Reset password email sent:", info.messageId);
+      } catch (err) {
+        console.log("Reset password email sent fail", err);
+      }
     },
   },
 
   session: {
-    expiresIn: 60 * 60 * 24 * 30, 
-    updateAge: 60 * 60 * 24, 
-    freshAge:0
+    expiresIn: 60 * 60 * 24 * 30,
+    updateAge: 60 * 60 * 24,
+    freshAge: 0,
   },
   advanced: {
-        useSecureCookies: false, 
-    },
+    useSecureCookies: false,
+  },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
 
-       sendVerificationEmail: async ({ user, url }) => {
-const link =
+    sendVerificationEmail: async ({ user, url }) => {
+      const link =
         process.env.APP_URL && process.env.BETTER_AUTH_URL
-            ? url.replace(
-                  process.env.BETTER_AUTH_URL,
-                  `${process.env.APP_URL}/backend-api`,
-              )
-            : url;
+          ? url.replace(
+              process.env.BETTER_AUTH_URL,
+              `${process.env.APP_URL}/backend-api`,
+            )
+          : url;
 
-        try {
-            const info = await transporter.sendMail({
-                from: `"FoodHub" <mahinulislam0611@gmail.com>`,
-                to: user.email,
-               subject: "Confirm your FoodHub account",
-                                html: `
+      try {
+        const info = await transporter.sendMail({
+          from: `"FoodHub" <mahinulislam0611@gmail.com>`,
+          to: user.email,
+          subject: "Confirm your FoodHub account",
+          html: `
 <div style="margin:0;padding:24px 12px;background-color:#f5f5f4;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e7e5e4;">
     <tr>
@@ -261,46 +273,44 @@ const link =
     </tr>
   </table>
 </div>`,
-            });
-            console.log(
-    "Verification email sent:",
-    info.messageId,
-    "| host:",
-    process.env.SMTP_HOST || "gmail-fallback",
-    "| response:",
-    info.response,
-);
-        } catch (err) {
-            console.log("Verification email sent fail", err);
-        }
+        });
+        console.log(
+          "Verification email sent:",
+          info.messageId,
+          "| host:",
+          process.env.SMTP_HOST || "gmail-fallback",
+          "| response:",
+          info.response,
+        );
+      } catch (err) {
+        console.log("Verification email sent fail", err);
+      }
     },
 
-
-
-// sendVerificationEmail: async ({ user, url }) => {
-//     try {
-//         const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-//             method: "POST",
-//             headers: {
-//                 "api-key": process.env.BREVO_API_KEY as string,
-//                 "content-type": "application/json",
-//             },
-//             body: JSON.stringify({
-//                 sender: { name: "FoodHub", email: "tomar-gmail@gmail.com" },
-//                 to: [{ email: user.email }],
-//                 subject: "Verify your FoodHub email",
-//                 htmlContent: `<p>Welcome to FoodHub! Click the link to verify your email:</p><p><a href="${url}">Verify email</a></p>`,
-//             }),
-//         });
-//         const body = await res.text();
-//         if (!res.ok) {
-//             console.log("Brevo email failed:", res.status, body);
-//         } else {
-//             console.log("Brevo email sent:", body);
-//         }
-//     } catch (err) {
-//         console.log("Verification email sent fail", err);
-//     }
-// },
+    // sendVerificationEmail: async ({ user, url }) => {
+    //     try {
+    //         const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    //             method: "POST",
+    //             headers: {
+    //                 "api-key": process.env.BREVO_API_KEY as string,
+    //                 "content-type": "application/json",
+    //             },
+    //             body: JSON.stringify({
+    //                 sender: { name: "FoodHub", email: "tomar-gmail@gmail.com" },
+    //                 to: [{ email: user.email }],
+    //                 subject: "Verify your FoodHub email",
+    //                 htmlContent: `<p>Welcome to FoodHub! Click the link to verify your email:</p><p><a href="${url}">Verify email</a></p>`,
+    //             }),
+    //         });
+    //         const body = await res.text();
+    //         if (!res.ok) {
+    //             console.log("Brevo email failed:", res.status, body);
+    //         } else {
+    //             console.log("Brevo email sent:", body);
+    //         }
+    //     } catch (err) {
+    //         console.log("Verification email sent fail", err);
+    //     }
+    // },
   },
 });

@@ -1,6 +1,14 @@
 import { prisma } from "../../lib/prisma";
 
 const createOrder = async (userId: string, data: any) => {
+  const orderingUser = await prisma.user.findUniqueOrThrow({
+  where: { id: userId },
+});
+if (!orderingUser.phoneVerified) {
+  throw new Error(
+    "Please verify your phone number before placing an order!",
+  );
+}
   return await prisma.$transaction(
     async (tx) => {
       const mealIds = data.items.map((i: any) => i.mealsId);

@@ -13,6 +13,7 @@ import { adminRouter } from "./modules/admins/admin.route";
 import { meRouter } from "./modules/me/me.route";
 import { reviewRouter } from "./modules/reviews/review.route";
 import { categoryController } from "./modules/category/category.controller";
+import { phoneRoutes } from "./modules/phone/phone.route";
 
 
 const app: Application = express();
@@ -45,7 +46,7 @@ app.use("/meals",mealsRouter)
 app.use("/provider",providerRouter)
 
 app.use("/orders",orderRouter)
-
+app.use("/phone", phoneRoutes);
 app.use("/reviews",reviewRouter)
 
 app.use(notFound)

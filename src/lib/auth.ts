@@ -111,6 +111,19 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: false,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+        try {
+            const info = await transporter.sendMail({
+                from: '"FoodHub" <mahinulislam0611@gmail.com>',
+                to: user.email,
+                subject: "Reset your FoodHub password",
+                html: `<p>Hi ${user.name || "there"},</p><p>Click the link below to reset your FoodHub password:</p><p><a href="${url}">Reset password</a></p><p>If you didn't request this, you can safely ignore this email.</p>`,
+            });
+            console.log("Reset password email sent:", info.messageId);
+        } catch (err) {
+            console.log("Reset password email sent fail", err);
+        }
+    },
   },
 
   session: {

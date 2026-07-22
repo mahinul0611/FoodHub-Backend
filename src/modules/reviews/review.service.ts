@@ -31,15 +31,21 @@ const createReview = async (userId: string, payload: any) => {
   }
 
 
-         const alreadyReviewed = await prisma.reviews.findFirst({
+const alreadyReviewed = await prisma.reviews.findFirst({
   where: {
     userId: userId,
     mealsId: payload.mealsId,
   },
 });
 
-        if (alreadyReviewed) {
-  throw new Error("You have already reviewed this food")
+if (alreadyReviewed) {
+  return prisma.reviews.update({
+    where: { id: alreadyReviewed.id },
+    data: {
+      ratings: Number(payload.ratings),
+      comment: payload.comment,
+    },
+  });
 }
 
 

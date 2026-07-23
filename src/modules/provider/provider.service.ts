@@ -64,6 +64,8 @@ const updateOrderStatus = async(orderId:string,status: OrdersStatus)=>{
 
 
 const updateProfile = async (userId: string, payload: any) => {
+
+  console.log("🔥 Frontend theke asha Payload:", payload);
   const isUserExist = await prisma.user.findUnique({
     where: { id: userId },
   });

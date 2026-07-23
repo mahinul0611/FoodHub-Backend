@@ -13,16 +13,19 @@ const createOrder = async (req: Request, res: Response) => {
      });
 
     }
-    const { address, contactNumber, items } = req.body;
+    const { address, contactNumber, items,couponCode } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ error: "Cart cannot be empty" });
     }
 
+    console.log("🔥 Order Data Received:", data);
+  console.log("🔥 Coupon Code:", data.couponCode);
     const order = await orderService.createOrder(userId!, {
       address,
       contactNumber,
       items,
+      couponCode
     });
 
     return res.status(201).json({

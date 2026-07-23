@@ -4,6 +4,10 @@ import { couponService, DELIVERY_CHARGE } from "../coupon/coupon.service";
 
 
 const createOrder = async (userId: string, data: any) => {
+
+  console.log("🔥 Order Data Received:", data);
+  console.log("🔥 Coupon Code:", data.couponCode);
+
   return await prisma.$transaction(
     async (tx) => {
       const mealIds = data.items.map((i: any) => i.mealsId);

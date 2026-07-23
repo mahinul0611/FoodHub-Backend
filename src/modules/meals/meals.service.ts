@@ -143,6 +143,7 @@ const getMealById = async (mealId: string) => {
       },
       provider: {
         select: {
+          id:true,
           name: true,
           email: true,
         },
@@ -177,7 +178,7 @@ const updateMeals = async (
     },
   });
 
-  if (!isProvider && mealData.id !== providerId) {
+  if (!isProvider && mealData.providerId !== providerId) {
     throw new Error("You are not the owner of this Meal!!! ");
   }
 

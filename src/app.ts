@@ -22,10 +22,17 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: process.env.APP_URL || "http://localhost:3000",
-    credentials: true, //
-  }),
+    origin: [
+      "http://localhost:3000",
+      "https://mahinulislam2208054.me",
+      "https://foodhub-frontend-flame.vercel.app",
+      process.env.APP_URL || ""
+    ].filter(Boolean),
+    credentials: true,
+  })
 );
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // SSLCommerz form-data pathay — eta MUST (already thakle skip)
 app.use("/payments", paymentRoutes);

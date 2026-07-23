@@ -11,13 +11,13 @@ router.get(
   auth(UserRole.PROVIDER),
   providerController.getProviderOrder,
 );
+router.get("/nearby", providerController.getNearbyRestaurants);
 router.get(
   "/analytics",
   auth(UserRole.PROVIDER),
   providerController.getAnalytics,
 );
 
-router.get("/nearby", providerController.getNearbyRestaurants);
 
 router.patch(
   "/orders/:orderId",

@@ -58,12 +58,14 @@ const updateOrderStatus = async (req: Request, res: Response) => {
 
     const providerProfile = await prisma.providersProfile.findUniqueOrThrow({
       where: {
-        userId:providerId
+        userId: providerId,
       },
     });
 
     if (!providerProfile) {
-      return res.status(403).json({ success: false, message: "Provider Profile Not Found" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Provider Profile Not Found" });
     }
     // console.log({ req });
 
@@ -87,13 +89,11 @@ const updateOrderStatus = async (req: Request, res: Response) => {
       (item) => item.meals.providerId === providerProfile.id,
     );
     if (!isOwnOrder) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message:
-            "Unauthorized: This order contains items from another provider",
-        });
+      return res.status(403).json({
+        success: false,
+        message:
+          "Unauthorized: This order contains items from another provider",
+      });
     }
 
     // console.log({ req });
@@ -119,7 +119,10 @@ const updateProfile = async (req: Request, res: Response) => {
     const updatedData = req.body;
 
     // Service call kora hocche
-    const result = await providerService.updateProfile(id as string, updatedData);
+    const result = await providerService.updateProfile(
+      id as string,
+      updatedData,
+    );
 
     return res.status(200).json({
       success: true,
@@ -136,7 +139,6 @@ const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
-
 const getAnalytics = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
@@ -151,37 +153,36 @@ const getAnalytics = async (req: Request, res: Response) => {
   }
 };
 
-
 const getNearbyRestaurants = async (req: Request, res: Response) => {
   try {
-    const { lat, lng, radius = 10 } = req.query; // default 10km radius
+    const { lat, lng, radius } = req.query;
 
     if (!lat || !lng) {
-      return res.status(400).json({ success: false, message: "Latitude and longitude are required" });
+      return res.status(400).json({
+        success: false,
+        message: "Latitude and longitude are required",
+      });
     }
 
     const userLat = parseFloat(lat as string);
     const userLng = parseFloat(lng as string);
-    const maxDistance = parseFloat(radius as string);
+    const maxDistance = radius ? parseFloat(radius as string) : 10;
 
-    // PostgreSQL raw query using Haversine formula
-    const restaurants = await prisma.$queryRaw`
-      SELECT id, userId, name, email, latitude, longitude,
-      ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
-      * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
-      * sin( radians( latitude ) ) ) ) AS distance
-      FROM "ProvidersProfile"
-      WHERE latitude IS NOT NULL AND longitude IS NOT NULL
-      HAVING ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
-      * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
-      * sin( radians( latitude ) ) ) ) <= ${maxDistance}
-      ORDER BY distance ASC;
-    `;
+    const result = await providerService.getNearbyRestaurants(
+      userLat,
+      userLng,
+      maxDistance,
+    );
 
-    res.status(200).json({ success: true, data: restaurants });
-  } catch (error) {
-    console.error("Error fetching nearby restaurants:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
   }
 };
 

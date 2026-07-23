@@ -4,7 +4,6 @@ import { couponService, DELIVERY_CHARGE } from "../coupon/coupon.service";
 
 
 const createOrder = async (userId: string, data: any) => {
-
   // Phone verification requirement — re-enable when needed
   //   const orderingUser = await prisma.user.findUniqueOrThrow({
   //   where: { id: userId },
@@ -38,7 +37,6 @@ const createOrder = async (userId: string, data: any) => {
         };
       });
 
-      // Coupon + delivery charge
       let discount = 0;
       let appliedCode: string | null = null;
       if (data.couponCode) {
@@ -49,6 +47,7 @@ const createOrder = async (userId: string, data: any) => {
         discount = couponResult.discount;
         appliedCode = couponResult.code;
       }
+
       const totalPrice = Math.max(0, total + DELIVERY_CHARGE - discount);
 
       const order = await tx.orders.create({

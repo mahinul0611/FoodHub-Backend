@@ -155,15 +155,16 @@ const getNearbyRestaurants = async (
   maxDistance: number = 15,
 ) => {
   const result = await prisma.$queryRaw`
-    SELECT id, name, email, latitude, longitude,
-    ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
-    * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
-    * sin( radians( latitude ) ) ) ) AS distance
-    FROM "ProvidersProfile"
-    WHERE latitude IS NOT NULL AND longitude IS NOT NULL
-    HAVING ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
-    * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
-    * sin( radians( latitude ) ) ) ) <= ${maxDistance}
+    SELECT id, name, email, latitude, longitude, distance
+    FROM (
+      SELECT id, name, email, latitude, longitude,
+      ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
+      * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
+      * sin( radians( latitude ) ) ) ) AS distance
+      FROM "ProvidersProfile"
+      WHERE latitude IS NOT NULL AND longitude IS NOT NULL
+    ) AS subquery
+    WHERE distance <= ${maxDistance}
     ORDER BY distance ASC;
   `;
   return result;

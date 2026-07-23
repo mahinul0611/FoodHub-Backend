@@ -54,11 +54,11 @@ const getProviderOrder = async (req: Request, res: Response) => {
 
 const updateOrderStatus = async (req: Request, res: Response) => {
   try {
-    const providerUserId = (req as any).user?.id;
+    const providerId = (req as any).user?.id;
 
     const providerProfile = await prisma.providersProfile.findUniqueOrThrow({
       where: {
-        userId:providerUserId
+        userId:providerId
       },
     });
 

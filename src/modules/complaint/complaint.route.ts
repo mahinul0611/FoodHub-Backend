@@ -1,13 +1,18 @@
 import { Router } from "express";
 import { complaintController } from "./complaint.controller";
-// ⚠️ review.route.ts e je auth middleware use koro, seta ekhaneo import koro
+import auth from "../../middleware/auth";
+import { UserRole } from "../../lib/auth";
 
 const router = Router();
 
-router.post("/", complaintController.create);
-router.get("/my", complaintController.my);
-router.get("/provider", complaintController.provider);
-router.get("/admin", complaintController.admin);
-router.patch("/:id", complaintController.update);
+router.post("/", auth(UserRole.USER), complaintController.create);
+router.get("/my", auth(UserRole.USER), complaintController.my);
+router.get("/provider", auth(UserRole.PROVIDER), complaintController.provider);
+router.get("/admin", auth(UserRole.ADMIN), complaintController.admin);
+router.patch(
+  "/:id",
+  auth(UserRole.PROVIDER, UserRole.ADMIN),
+  complaintController.update,
+);
 
 export const complaintRoutes = router;

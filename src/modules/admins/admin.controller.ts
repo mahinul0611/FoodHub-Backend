@@ -142,8 +142,11 @@ const getAdminStats = async (req: Request, res: Response) => {
 
 const removeProvider = async (req: Request, res: Response) => {
   try {
+
+    console.log("REQ PARAMS:", req.params);
     const { providerId } = req.params; // Provider er User ID
     
+
     const result = await adminService.removeProvider(providerId as string);
     
     return res.status(200).json({

@@ -5,6 +5,10 @@ import { UserRole } from "../../lib/auth";
 
 const router = Router();
 
+
+router.get("/stripe/success", paymentController.stripeSuccess);
+router.get("/stripe/cancel", paymentController.stripeCancel);
+
 router.post("/init", auth(UserRole.USER), paymentController.init);
 
 // Niche gulo SSLCommerz er server/browser theke ashe — auth NAI, eta ichakrito

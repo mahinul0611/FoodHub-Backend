@@ -4,9 +4,9 @@
   "description": "",
   "main": "app.ts",
   "scripts": {
-  "build": "prisma generate && tsup src/server.ts --format esm --outDir dist --clean",
-  "start": "node dist/server.js",
-  "postinstall": "prisma generate"
+    "build": "prisma generate && tsup src/server.ts --format esm --outDir dist --clean",
+    "start": "node dist/server.js",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +31,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "nodemailer": "^7.0.13",
-    "pg": "^8.17.2"
+    "pg": "^8.17.2",
+    "stripe": "^22.3.2"
   }
 }

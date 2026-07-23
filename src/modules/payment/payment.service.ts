@@ -1,5 +1,10 @@
 import { prisma } from "../../lib/prisma";
 
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+
+
 const SSLCZ_BASE =
   process.env.SSLCZ_IS_LIVE === "true"
     ? "https://securepay.sslcommerz.com"
@@ -132,8 +137,93 @@ const handleFailure = async (body: any, cancelled: boolean) => {
   return orderId as string;
 };
 
+
+
+const initStripePayment = async (userId: string, orderId: string) => {
+  const order = await prisma.orders.findUnique({
+    where: { id: orderId },
+    include: { user: true },
+  });
+  if (!order) throw new Error("Order not found!");
+  if (order.userId !== userId)
+    throw new Error("You can only pay for your own orders!");
+  if (order.paymentStatus === "PAID")
+    throw new Error("This order is already paid!");
+
+  // ⚠️ initPayment (SSLCommerz) e amount jevabe ber korecho, EXACT sevabe ekhaneo
+  const amount = Number(order.totalPrice);
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price_data: {
+          currency: "bdt", // jodi "currency not supported" error dey, "usd" kore daw
+          product_data: {
+            name: `FoodHub Order #${orderId.slice(0, 8).toUpperCase()}`,
+          },
+          unit_amount: Math.round(amount * 100), // taka -> poisha
+        },
+        quantity: 1,
+      },
+    ],
+    ...(order.user?.email ? { customer_email: order.user.email } : {}),
+    metadata: { orderId },
+    success_url: `${BACKEND_URL}/payments/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${BACKEND_URL}/payments/stripe/cancel?orderId=${orderId}`,
+  });
+
+  if (!session.url) throw new Error("Failed to create Stripe session!");
+
+  await prisma.orders.update({
+    where: { id: orderId },
+    data: {
+      paymentMethod: "STRIPE",
+      paymentStatus: "UNPAID",
+      transactionId: session.id,
+    },
+  });
+
+  return { paymentUrl: session.url };
+};
+
+const handleStripeSuccess = async (sessionId: string) => {
+  if (!sessionId) return null;
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  if (session.payment_status !== "paid") return null;
+
+  const orderId = session.metadata?.orderId;
+  if (!orderId) return null;
+
+  const order = await prisma.orders.findUnique({ where: { id: orderId } });
+  if (!order || order.transactionId !== session.id) return null;
+
+  await prisma.orders.update({
+    where: { id: orderId },
+    data: { paymentStatus: "PAID" },
+  });
+  return orderId;
+};
+
+const handleStripeCancel = async (orderId: string) => {
+  if (!orderId) return;
+  const order = await prisma.orders.findUnique({ where: { id: orderId } });
+  if (!order || order.paymentStatus === "PAID") return;
+  await prisma.orders.update({
+    where: { id: orderId },
+    data: { paymentStatus: "CANCELLED", status: "CANCELLED" },
+  });
+};
+
+
+
+
 export const paymentService = {
   initPayment,
   handleSuccess,
   handleFailure,
+  initStripePayment,
+  handleStripeSuccess,
+  handleStripeCancel,
 };

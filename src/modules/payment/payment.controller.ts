@@ -10,7 +10,11 @@ const init = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const result = await paymentService.initPayment(user.id, req.body.orderId);
+    const { method } = req.body ?? {};
+    const result =
+      method === "STRIPE"
+        ? await paymentService.initStripePayment(user.id, req.body.orderId)
+        : await paymentService.initPayment(user.id, req.body.orderId);
     res.status(200).json({ success: true, data: result });
   } catch (error: any) {
     res.status(400).json({
@@ -61,4 +65,40 @@ const ipn = async (req: Request, res: Response) => {
   res.status(200).send("OK");
 };
 
-export const paymentController = { init, success, fail, cancel, ipn };
+const stripeSuccess = async (req: Request, res: Response) => {
+  try {
+    const sessionId = req.query.session_id;
+    const orderId =
+      typeof sessionId === "string"
+        ? await paymentService.handleStripeSuccess(sessionId)
+        : null;
+    if (orderId) {
+      return res.redirect(`${FRONTEND_URL}/payment/success?orderId=${orderId}`);
+    }
+    return res.redirect(`${FRONTEND_URL}/payment/failed`);
+  } catch {
+    return res.redirect(`${FRONTEND_URL}/payment/failed`);
+  }
+};
+
+const stripeCancel = async (req: Request, res: Response) => {
+  try {
+    const orderId = req.query.orderId;
+    if (typeof orderId === "string") {
+      await paymentService.handleStripeCancel(orderId);
+    }
+  } catch {
+    // best-effort
+  }
+  return res.redirect(`${FRONTEND_URL}/payment/failed?reason=cancelled`);
+};
+
+export const paymentController = {
+  init,
+  success,
+  fail,
+  cancel,
+  ipn,
+  stripeCancel,
+  stripeSuccess,
+};

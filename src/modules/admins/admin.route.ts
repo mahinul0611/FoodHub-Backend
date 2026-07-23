@@ -16,6 +16,6 @@ router.put(
 );
 
 // Delete route (asole soft delete hocche)
-router.delete("/providers/:id", auth(UserRole.ADMIN), adminController.removeProvider);
+router.delete("/providers/:providerId", auth(UserRole.ADMIN), adminController.removeProvider);
 
 export const adminRouter = router;

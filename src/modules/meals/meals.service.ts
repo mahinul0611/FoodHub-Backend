@@ -39,7 +39,15 @@ const createMeal = async (providerId: string, payload: ICreateMealPayload) => {
 };
 
 const getAllMeals = async (query: any) => {
-  const { searchTerm, minPrice, maxPrice, categoryId, ...filterData } = query;
+  const {
+    searchTerm,
+    minPrice,
+    maxPrice,
+    categoryId,
+    page,
+    limit,
+    ...filterData
+  } = query;
 
   const andConditions: MealsWhereInput[] = [];
 
@@ -73,9 +81,9 @@ const getAllMeals = async (query: any) => {
     });
   }
 
-  const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 10;
-  const skip = (page - 1) * limit;
+  const pageNumber = Number(page) || 1;
+  const limitNumber = Number(limit) || 10;
+  const skip = (pageNumber - 1) * limitNumber;
 
   const whereConditions: MealsWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
@@ -83,7 +91,7 @@ const getAllMeals = async (query: any) => {
   const result = await prisma.meals.findMany({
     where: whereConditions,
     skip,
-    take: limit,
+    take: limitNumber,
     orderBy: {
       createdAt: "desc",
     },
@@ -103,14 +111,12 @@ const getAllMeals = async (query: any) => {
 
   const resultWithAverageRating = result.map((meal) => {
     const totalReviews = meal.reviews.length;
-
     const sumRatings = meal.reviews.reduce(
       (acc, review) => acc + review.ratings,
       0,
     );
     const averageRating =
       totalReviews > 0 ? (sumRatings / totalReviews).toFixed(1) : "0";
-
     return {
       ...meal,
       averageRating: parseFloat(averageRating),
@@ -122,8 +128,8 @@ const getAllMeals = async (query: any) => {
 
   return {
     meta: {
-      page,
-      limit,
+      page: pageNumber,
+      limit: limitNumber,
       total,
     },
     data: resultWithAverageRating,

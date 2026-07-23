@@ -69,11 +69,30 @@ const getMyOrders= async(req:Request,res:Response)=>{
 }
 
 
-
+const cancelMyOrder = async (req: Request, res: Response) => {
+  const user = (req as any).user; // ⚠️ tomar onno controller e user jevabe newa hoy, EXACT sevabe nao
+  const orderId = req.params.id;
+  if (typeof orderId !== "string" || !orderId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Order id is required!" });
+  }
+  try {
+    const order = await orderService.cancelMyOrder(user.id, orderId);
+    return res.status(200).json({ success: true, data: order });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message:
+        err instanceof Error ? err.message : "Failed to cancel order!",
+    });
+  }
+};
 
 
 
 export const orderController = {
   createOrder,
-  getMyOrders
+  getMyOrders,
+  cancelMyOrder
 };

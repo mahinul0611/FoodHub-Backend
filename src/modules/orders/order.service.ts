@@ -4,7 +4,7 @@ import { couponService, DELIVERY_CHARGE } from "../coupon/coupon.service";
 
 
 const createOrder = async (userId: string, data: any) => {
-  
+
   // Phone verification requirement — re-enable when needed
   //   const orderingUser = await prisma.user.findUniqueOrThrow({
   //   where: { id: userId },
@@ -114,8 +114,31 @@ const getMyOrders= async (userId:string)=>{
 
 }
 
+const cancelMyOrder = async (userId: string, orderId: string) => {
+  const order = await prisma.orders.findUnique({ where: { id: orderId } });
+  if (!order) throw new Error("Order not found!");
+  if (order.userId !== userId)
+    throw new Error("You can only cancel your own orders!");
+  if (order.status !== "PLACED")
+    throw new Error(
+      "This order is already being prepared and can no longer be cancelled!",
+    );
+
+  return await prisma.orders.update({
+    where: { id: orderId },
+    data: {
+      status: "CANCELLED",
+      // Paid order hole paymentStatus PAID e thakbe (refund manually handle hobe)
+      ...(order.paymentStatus === "PAID"
+        ? {}
+        : { paymentStatus: "CANCELLED" }),
+    },
+  });
+};
+
 
 export const orderService = {
   createOrder,
-  getMyOrders
+  getMyOrders,
+  cancelMyOrder
 };

@@ -19,8 +19,7 @@ const createOrder = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Cart cannot be empty" });
     }
 
-    console.log("🔥 Order Data Received:", data);
-  console.log("🔥 Coupon Code:", data.couponCode);
+    
     const order = await orderService.createOrder(userId!, {
       address,
       contactNumber,

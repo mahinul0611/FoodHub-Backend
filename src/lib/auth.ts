@@ -22,9 +22,15 @@ export const transporter = nodemailer.createTransport({
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins: [process.env.APP_URL, "http://localhost:3000","https://foodhub-frontend-flame.vercel.app"].filter(
-    Boolean,
-  ) as string[],
+  trustedOrigins: [
+
+    "https://www.mahinulislam2208054.me",
+    "http://localhost:3000",
+    "https://foodhub-frontend-flame.vercel.app",
+    "https://www.foodhub-frontend-flame.vercel.app",
+    "https://mahinulislam2208054.me",
+    process.env.APP_URL,
+  ].filter(Boolean) as string[],
   account: {
     accountLinking: {
       enabled: true,

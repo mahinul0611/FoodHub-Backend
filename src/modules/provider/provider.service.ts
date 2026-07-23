@@ -72,14 +72,25 @@ const updateProfile = async (userId: string, payload: any) => {
     throw new Error("User not found!");
   }
 
-  const result = await prisma.providersProfile.update({
-    where: {
-      userId: userId, 
-    },
-    data: payload,
-  });
+  // Transaction er madhyome 2to table eksathe update
+  return await prisma.$transaction(async (tx) => {
+    
+    // 1. Restaurant/Provider Profile update
+    const result = await tx.providersProfile.update({
+      where: { userId: userId },
+      data: payload, // payload e thaka sob update hobe
+    });
 
-  return result;
+    // 2. Sathe User table o update (jodi payload e name theke thake) jate profile e mismatch na hoy
+    if (payload.name) {
+      await tx.user.update({
+        where: { id: userId },
+        data: { name: payload.name },
+      });
+    }
+
+    return result;
+  });
 };
 
 export const providerService = {

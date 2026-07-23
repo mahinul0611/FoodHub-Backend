@@ -114,16 +114,26 @@ const updateOrderStatus = async (req: Request, res: Response) => {
 };
 
 const updateProfile = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const updatedData = req.body;
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
 
-  const result = await providerService.updateProfile(id as string, updatedData);
+    // Service call kora hocche
+    const result = await providerService.updateProfile(id as string, updatedData);
 
-  res.status(200).json({
-    success: true,
-    message: "Provider profile updated successfully",
-    data: result,
-  });
+    return res.status(200).json({
+      success: true,
+      message: "Provider profile updated successfully",
+      data: result,
+    });
+  } catch (err: any) {
+    // Kono error asle backend crash korbe na, frontend e error message pathabe
+    return res.status(400).json({
+      success: false,
+      message: "Failed to update profile",
+      error: err.message || err,
+    });
+  }
 };
 
 export const providerController = {

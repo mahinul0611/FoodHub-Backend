@@ -16,6 +16,9 @@ router.get(
   auth(UserRole.PROVIDER),
   providerController.getAnalytics,
 );
+
+router.get("/nearby", providerController.getNearbyRestaurants);
+
 router.patch(
   "/orders/:orderId",
   auth(UserRole.PROVIDER),

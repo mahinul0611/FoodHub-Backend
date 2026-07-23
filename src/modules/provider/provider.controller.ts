@@ -150,10 +150,46 @@ const getAnalytics = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+const getNearbyRestaurants = async (req: Request, res: Response) => {
+  try {
+    const { lat, lng, radius = 10 } = req.query; // default 10km radius
+
+    if (!lat || !lng) {
+      return res.status(400).json({ success: false, message: "Latitude and longitude are required" });
+    }
+
+    const userLat = parseFloat(lat as string);
+    const userLng = parseFloat(lng as string);
+    const maxDistance = parseFloat(radius as string);
+
+    // PostgreSQL raw query using Haversine formula
+    const restaurants = await prisma.$queryRaw`
+      SELECT id, userId, name, email, latitude, longitude,
+      ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
+      * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
+      * sin( radians( latitude ) ) ) ) AS distance
+      FROM "ProvidersProfile"
+      WHERE latitude IS NOT NULL AND longitude IS NOT NULL
+      HAVING ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
+      * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
+      * sin( radians( latitude ) ) ) ) <= ${maxDistance}
+      ORDER BY distance ASC;
+    `;
+
+    res.status(200).json({ success: true, data: restaurants });
+  } catch (error) {
+    console.error("Error fetching nearby restaurants:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 export const providerController = {
   getAllProvider,
   getProviderOrder,
   updateOrderStatus,
   updateProfile,
   getAnalytics,
+  getNearbyRestaurants,
 };

@@ -178,6 +178,8 @@ model ProvidersProfile {
   user      User     @relation(fields: [userId], references: [id])
   name      String
   email     String
+  latitude  Float?   // 👈 Restaurant er latitude
+  longitude Float?   // 👈 Restaurant er longitude
   meals     Meals[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,5 +1,5 @@
 import { Orders, OrdersStatus } from "../../../generated/prisma/client";
-import { prisma } from "../../lib/prisma"; 
+import { prisma } from "../../lib/prisma";
 
 const getAllProvider = async () => {
   const result = await prisma.providersProfile.findMany();
@@ -16,8 +16,8 @@ const getProviderOrder = async (providerId: string) => {
     where: {
       orderItems: {
         some: {
-          meals: { 
-            providerId: provider.id 
+          meals: {
+            providerId: provider.id,
           },
         },
       },
@@ -25,8 +25,8 @@ const getProviderOrder = async (providerId: string) => {
     include: {
       orderItems: {
         where: {
-          meals: { 
-            providerId: provider.id 
+          meals: {
+            providerId: provider.id,
           },
         },
         include: {
@@ -41,31 +41,26 @@ const getProviderOrder = async (providerId: string) => {
       },
     },
     orderBy: {
-      createdAt: "desc"
-    }
+      createdAt: "desc",
+    },
   });
   return result;
 };
 
-
-const updateOrderStatus = async(orderId:string,status: OrdersStatus)=>{
-
+const updateOrderStatus = async (orderId: string, status: OrdersStatus) => {
   const result = await prisma.orders.update({
-    where:{
-      id:orderId
+    where: {
+      id: orderId,
     },
     data: {
-      status: status as OrdersStatus
-    }
-  })
+      status: status as OrdersStatus,
+    },
+  });
 
-  return result
-}
-
+  return result;
+};
 
 const updateProfile = async (userId: string, payload: any) => {
-
-  
   const isUserExist = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -76,7 +71,6 @@ const updateProfile = async (userId: string, payload: any) => {
 
   // Transaction er madhyome 2to table eksathe update
   return await prisma.$transaction(async (tx) => {
-    
     // 1. Restaurant/Provider Profile update
     const result = await tx.providersProfile.update({
       where: { userId: userId },
@@ -94,8 +88,6 @@ const updateProfile = async (userId: string, payload: any) => {
     return result;
   });
 };
-
-
 
 const getAnalytics = async (userId: string) => {
   const provider = await prisma.providersProfile.findUniqueOrThrow({
@@ -138,10 +130,12 @@ const getAnalytics = async (userId: string) => {
     });
   });
 
-  const revenueData = Array.from(revenueMap.entries()).map(([date, revenue]) => ({
-    date,
-    revenue,
-  }));
+  const revenueData = Array.from(revenueMap.entries()).map(
+    ([date, revenue]) => ({
+      date,
+      revenue,
+    }),
+  );
 
   const topMealsData = Array.from(mealSalesMap.values())
     .sort((a, b) => b.count - a.count)
@@ -155,11 +149,32 @@ const getAnalytics = async (userId: string) => {
   };
 };
 
+const getNearbyRestaurants = async (
+  userLat: number,
+  userLng: number,
+  maxDistance: number = 10,
+) => {
+  // Haversine formula query using Prisma raw query
+  const result = await prisma.$queryRaw`
+      SELECT id, userId, name, email, latitude, longitude,
+      ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
+      * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
+      * sin( radians( latitude ) ) ) ) AS distance
+      FROM "ProvidersProfile"
+      WHERE latitude IS NOT NULL AND longitude IS NOT NULL
+      HAVING ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
+      * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
+      * sin( radians( latitude ) ) ) ) <= ${maxDistance}
+      ORDER BY distance ASC;
+    `;
+  return result;
+};
 
 export const providerService = {
   getAllProvider,
   getProviderOrder,
   updateOrderStatus,
   updateProfile,
-  getAnalytics
+  getAnalytics,
+  getNearbyRestaurants,
 };

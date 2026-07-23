@@ -32,7 +32,6 @@ enum UserStatus {
   SUSPEND
 }
 
-
 enum ComplaintCategory {
   FOOD_QUALITY
   MISSING_ITEMS
@@ -46,6 +45,19 @@ enum ComplaintStatus {
   IN_REVIEW
   RESOLVED
   REJECTED
+}
+
+enum PaymentMethod {
+  COD
+  SSLCOMMERZ
+  STRIPE
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+  CANCELLED
 }
 
 model Complaint {
@@ -97,6 +109,9 @@ model Orders {
   address       String
   contactNumber String            @db.VarChar(30)
   status        OrdersStatus      @default(PLACED) // Ensure you have a default
+  paymentMethod PaymentMethod     @default(COD)
+  paymentStatus PaymentStatus     @default(UNPAID)
+  transactionId String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
   orderItems    OrderItems[]

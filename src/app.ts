@@ -15,6 +15,7 @@ import { reviewRouter } from "./modules/reviews/review.route";
 import { categoryController } from "./modules/category/category.controller";
 import { phoneRoutes } from "./modules/phone/phone.route";
 import { complaintRoutes } from "./modules/complaint/complaint.route";
+import { paymentRoutes } from "./modules/payment/payment.route";
 
 
 const app: Application = express();
@@ -27,7 +28,8 @@ app.use(cors(
   }
 ))
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true })); // SSLCommerz form-data pathay — eta MUST (already thakle skip)
+app.use("/payments", paymentRoutes);
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
 

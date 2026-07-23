@@ -15,6 +15,7 @@ router.put(
   adminController.updateUserStatus,
 );
 
-
+// Delete route (asole soft delete hocche)
+router.delete("/providers/:id", auth(UserRole.ADMIN), adminController.removeProvider);
 
 export const adminRouter = router;

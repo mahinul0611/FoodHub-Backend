@@ -110,6 +110,7 @@ model Meals {
   isOnDiet    Boolean
   reviews     Reviews[]
   orderItems  OrderItems[]
+  isDeleted Boolean @default(false)
 }
 
 model Category {
@@ -181,6 +182,7 @@ model ProvidersProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   orders    Orders[]
+  isDeleted Boolean @default(false)
 }
 
 model User {
@@ -202,6 +204,7 @@ model User {
   sessions         Session[]
   orders           Orders[]
   reviews          Reviews[]
+  isDeleted Boolean @default(false)
 
   @@map("user")
 }

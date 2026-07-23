@@ -140,10 +140,31 @@ const getAdminStats = async (req: Request, res: Response) => {
 };
 
 
+const removeProvider = async (req: Request, res: Response) => {
+  try {
+    const { providerId } = req.params; // Provider er User ID
+    
+    const result = await adminService.removeProvider(providerId as string);
+    
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      success: false,
+      message: "Failed to remove provider",
+      error: err.message,
+    });
+  }
+};
+
+
 export const adminController = {
   getAllUsers,
   getAllOrders,
   getUserById,
   getAdminStats,
   updateUserStatus,
+  removeProvider,
 };

@@ -132,10 +132,45 @@ const getAllOrders = async () => {
   };
 };
 
+
+const removeProvider = async (providerUserId: string) => {
+  const provider = await prisma.providersProfile.findUnique({
+    where: { userId: providerUserId },
+  });
+
+  if (!provider) {
+    throw new Error("Provider profile not found!");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // 1. User table e hide kora
+    await tx.user.update({
+      where: { id: providerUserId },
+      data: { isDeleted: true },
+    });
+
+    // 2. Provider table e hide kora
+    await tx.providersProfile.update({
+      where: { id: provider.id },
+      data: { isDeleted: true },
+    });
+
+    // 3. Oi provider er shob Meals eksathe hide kora
+    await tx.meals.updateMany({
+      where: { providerId: provider.id },
+      data: { isDeleted: true },
+    });
+  });
+
+  return { message: "Provider and associated meals successfully removed." };
+};
+
+
 export const adminService = {
   getAllUsers,
   getAllOrders,
   getUserById,
   getAdminStats,
   updateUserStatus,
+  removeProvider,
 };

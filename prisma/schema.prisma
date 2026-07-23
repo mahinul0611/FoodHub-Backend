@@ -102,6 +102,7 @@ model Meals {
   provider    ProvidersProfile @relation(fields: [providerId], references: [id])
   price       Decimal
   quantity    Int
+  image       String?
   description String
   status      MealsStatus      @default(AVAILABLE)
   createdAt   DateTime         @default(now())

@@ -9,6 +9,7 @@ export interface ICreateMealPayload {
   quantity: number;
   categoryId: string;
   isOnDiet?: boolean;
+  image?: string;
 }
 
 const createMeal = async (providerId: string, payload: ICreateMealPayload) => {
@@ -33,6 +34,7 @@ const createMeal = async (providerId: string, payload: ICreateMealPayload) => {
       categoryId: payload.categoryId,
       isOnDiet: payload.isOnDiet || false,
       providerId: provider.id,
+      image: payload.image || null,
     },
   });
   return result;

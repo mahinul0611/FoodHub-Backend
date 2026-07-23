@@ -26,8 +26,8 @@ export const auth = betterAuth({
 
     "https://www.mahinulislam2208054.me",
     "http://localhost:3000",
-    "https://foodhub-frontend-flame.vercel.app",
-    "https://www.foodhub-frontend-flame.vercel.app",
+    "https://food-hub-frontend-flame.vercel.app",
+    "https://www.food-hub-frontend-flame.vercel.app",   
     "https://mahinulislam2208054.me",
     process.env.APP_URL,
   ].filter(Boolean) as string[],

@@ -4,16 +4,6 @@ import { couponService, DELIVERY_CHARGE } from "../coupon/coupon.service";
 
 
 const createOrder = async (userId: string, data: any) => {
-  // Phone verification requirement — re-enable when needed
-  //   const orderingUser = await prisma.user.findUniqueOrThrow({
-  //   where: { id: userId },
-  // });
-  // if (!orderingUser.phoneVerified) {
-  //   throw new Error(
-  //     "Please verify your phone number before placing an order!",
-  //   );
-  // }
-
   return await prisma.$transaction(
     async (tx) => {
       const mealIds = data.items.map((i: any) => i.mealsId);
@@ -37,12 +27,13 @@ const createOrder = async (userId: string, data: any) => {
         };
       });
 
+      // Coupon + Delivery charge calculation
       let discount = 0;
       let appliedCode: string | null = null;
       if (data.couponCode) {
         const couponResult = await couponService.validateCoupon(
           data.couponCode,
-          total,
+          total
         );
         discount = couponResult.discount;
         appliedCode = couponResult.code;
@@ -67,6 +58,7 @@ const createOrder = async (userId: string, data: any) => {
         },
       });
 
+      // Coupon use korle count +1 kora
       if (appliedCode) {
         await tx.coupon.update({
           where: { code: appliedCode },
@@ -78,7 +70,7 @@ const createOrder = async (userId: string, data: any) => {
     },
     {
       timeout: 20000,
-    },
+    }
   );
 };
 

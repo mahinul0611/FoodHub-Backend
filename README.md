@@ -8,7 +8,7 @@ Built with **Node.js**, **Express**, **TypeScript**, **PostgreSQL**, and **Bette
 
 ## 🌐 Live Deployment
 
-🔗 **API Base URL:** [https://foodhub-backend-5.onrender.com/](https://foodhub-backend-5.onrender.com/)  
+🔗 **API Base URL:** [https://foodhub-backend-7.onrender.com/](https://foodhub-backend-7.onrender.com/)  
 🔗 **Local Development:** `http://localhost:5000`
 
 ---
@@ -136,7 +136,7 @@ FACEBOOK_CLIENT_SECRET="Your client secret"
 ### 4️⃣ **Run the Server**
 
 ```
-npm run dev
+npm start
 ```
 
 ### 5️⃣ **API Base URL**

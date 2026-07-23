@@ -20,14 +20,24 @@ import { couponRoutes } from "./modules/coupon/coupon.route";
 
 const app: Application = express();
 
+// Comma diye split kore array banano hocche
+const allowedOrigins = process.env.APP_URL
+  ? process.env.APP_URL.split(",").map((url) => url.trim())
+  : ["http://localhost:3000"];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://mahinulislam2208054.me",
-      "https://foodhub-frontend-flame.vercel.app",
-      process.env.APP_URL || ""
-    ].filter(Boolean),
+    origin: (origin, callback) => {
+      // Mobile app ba Postman theke request asle origin thake na
+      if (!origin) return callback(null, true);
+
+      // Check kora hocche origin-ti allowed list-e ache kina ba vercel.app kina
+      if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+        callback(null, true);
+      } else {
+        callback(new Error("Invalid origin"));
+      }
+    },
     credentials: true,
   })
 );

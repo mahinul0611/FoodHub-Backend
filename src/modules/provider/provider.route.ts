@@ -5,12 +5,27 @@ import { UserRole } from "../../lib/auth";
 
 const router = express.Router();
 
-router.get("/",providerController.getAllProvider)
-router.get("/orders",auth(UserRole.PROVIDER),providerController.getProviderOrder)
-router.patch("/orders/:orderId",auth(UserRole.PROVIDER),providerController.updateOrderStatus)
+router.get("/", providerController.getAllProvider);
+router.get(
+  "/orders",
+  auth(UserRole.PROVIDER),
+  providerController.getProviderOrder,
+);
+router.get(
+  "/analytics",
+  auth(UserRole.PROVIDER),
+  providerController.getAnalytics,
+);
+router.patch(
+  "/orders/:orderId",
+  auth(UserRole.PROVIDER),
+  providerController.updateOrderStatus,
+);
 
-router.patch("/profile/:id",auth(UserRole.PROVIDER) ,providerController.updateProfile);
+router.patch(
+  "/profile/:id",
+  auth(UserRole.PROVIDER),
+  providerController.updateProfile,
+);
 
-
-export const providerRouter= router;
-
+export const providerRouter = router;

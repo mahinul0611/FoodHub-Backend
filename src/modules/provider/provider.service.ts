@@ -95,9 +95,71 @@ const updateProfile = async (userId: string, payload: any) => {
   });
 };
 
+
+
+const getAnalytics = async (userId: string) => {
+  const provider = await prisma.providersProfile.findUniqueOrThrow({
+    where: { userId },
+  });
+
+  const orders = await prisma.orders.findMany({
+    where: {
+      providerId: provider.id,
+      status: { not: "CANCELLED" },
+    },
+    include: {
+      orderItems: {
+        include: { meals: true },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const revenueMap = new Map<string, number>();
+  const mealSalesMap = new Map<string, { name: string; count: number }>();
+
+  let totalRevenue = 0;
+  let totalOrders = orders.length;
+
+  orders.forEach((order) => {
+    // Prisma Decimal ke Number-e convert kora holo
+    const orderPrice = Number(order.totalPrice);
+    totalRevenue += orderPrice;
+
+    const date = order.createdAt.toISOString().split("T")[0] as string;
+    revenueMap.set(date, (revenueMap.get(date) || 0) + orderPrice);
+
+    order.orderItems.forEach((item) => {
+      const mealId = item.mealsId;
+      const mealName = item.meals?.name || "Unknown Meal";
+      const current = mealSalesMap.get(mealId) || { name: mealName, count: 0 };
+      current.count += item.quantity;
+      mealSalesMap.set(mealId, current);
+    });
+  });
+
+  const revenueData = Array.from(revenueMap.entries()).map(([date, revenue]) => ({
+    date,
+    revenue,
+  }));
+
+  const topMealsData = Array.from(mealSalesMap.values())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  return {
+    totalRevenue,
+    totalOrders,
+    revenueData,
+    topMealsData,
+  };
+};
+
+
 export const providerService = {
   getAllProvider,
   getProviderOrder,
   updateOrderStatus,
   updateProfile,
+  getAnalytics
 };

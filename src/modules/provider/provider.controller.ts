@@ -136,9 +136,24 @@ const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
+
+const getAnalytics = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    const data = await providerService.getAnalytics(user.id);
+    return res.status(200).json({ success: true, data });
+  } catch (err: any) {
+    return res.status(400).json({
+      success: false,
+      message: "Failed to load analytics",
+      error: err.message,
+    });
+  }
+};
 export const providerController = {
   getAllProvider,
   getProviderOrder,
   updateOrderStatus,
   updateProfile,
+  getAnalytics,
 };

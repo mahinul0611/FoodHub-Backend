@@ -90,9 +90,15 @@ const update = async (req: Request, res: Response) => {
     if (!["PROVIDER", "ADMIN"].includes(user.role)) {
       return res.status(403).json({ success: false, message: "Forbidden" });
     }
+    const complaintId = req.params.id;
+    if (typeof complaintId !== "string" || !complaintId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Complaint id is required" });
+    }
     const result = await complaintService.updateComplaint(
       { id: user.id, role: user.role },
-      req.params.id,
+      complaintId,
       req.body,
     );
     res.status(200).json({

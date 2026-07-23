@@ -23,9 +23,12 @@ const createComplaint = async (
   // ⚠️ Model/relation name gula tomar order service theke copy koro —
   // jevabe order fetch koro items + meals soho, exact sei include
   const order = await prisma.orders.findUnique({
-    where: { id: orderId },
-    include: { orderItems: { include: { meals: true } } },
-  });
+  where: { id: orderId },
+  include: {
+    provider: true,
+    orderItems: { include: { meals: { include: { provider: true } } } },
+  },
+});
   if (!order) throw new Error("Order not found!");
   if (order.userId !== userId) {
     throw new Error("You can only report your own orders!");
@@ -37,16 +40,19 @@ const createComplaint = async (
   }
 
   // ⚠️ meal er provider field er nam tomar schema onujayi adjust koro
-  const providerId = order.orderItems[0]?.meals?.providerId;
-  if (!providerId) {
-    throw new Error("Could not find the restaurant for this order!");
-  }
+  // Restaurant er USER id (ProvidersProfile.userId) — email + provider dashboard er jonno
+const providerProfile =
+  order.provider ?? order.orderItems[0]?.meals?.provider;
+const providerUserId = providerProfile?.userId;
+if (!providerUserId) {
+  throw new Error("Could not find the restaurant for this order!");
+}
 
   const complaint = await prisma.complaint.create({
     data: {
       orderId,
       userId,
-      providerId,
+      providerId: providerUserId,
       category: category as ComplaintCategory,
       description: description.trim(),
     },
@@ -56,7 +62,7 @@ const createComplaint = async (
   try {
     const [customer, provider, admin] = await Promise.all([
       prisma.user.findUnique({ where: { id: userId } }),
-      prisma.user.findUnique({ where: { id: providerId } }),
+      prisma.user.findUnique({ where: { id: providerUserId  } }),
       prisma.user.findFirst({ where: { role: "ADMIN" } }),
     ]);
     const to = [provider?.email, admin?.email].filter(Boolean).join(", ");
@@ -90,19 +96,33 @@ const createComplaint = async (
 const attachUsers = async (
   complaints: Array<{ userId: string; providerId: string }>,
 ) => {
-  const ids = [
-    ...new Set(complaints.flatMap((c) => [c.userId, c.providerId])),
-  ];
-  const users = await prisma.user.findMany({
-    where: { id: { in: ids } },
-    select: { id: true, name: true, email: true },
+  const ids = [...new Set(complaints.flatMap((c) => [c.userId, c.providerId]))];
+  const [users, profiles] = await Promise.all([
+    prisma.user.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, name: true, email: true },
+    }),
+    prisma.providersProfile.findMany({
+      where: { OR: [{ userId: { in: ids } }, { id: { in: ids } }] },
+      select: { id: true, userId: true, name: true, email: true },
+    }),
+  ]);
+  const userById = new Map(users.map((u) => [u.id, u]));
+  const profileByKey = new Map<string, (typeof profiles)[number]>();
+  for (const profile of profiles) {
+    profileByKey.set(profile.userId, profile);
+    profileByKey.set(profile.id, profile);
+  }
+  return complaints.map((c) => {
+    const profile = profileByKey.get(c.providerId);
+    return {
+      ...c,
+      user: userById.get(c.userId) ?? null,
+      provider: profile
+        ? { id: c.providerId, name: profile.name, email: profile.email }
+        : (userById.get(c.providerId) ?? null),
+    };
   });
-  const byId = new Map(users.map((u) => [u.id, u]));
-  return complaints.map((c) => ({
-    ...c,
-    user: byId.get(c.userId) ?? null,
-    provider: byId.get(c.providerId) ?? null,
-  }));
 };
 
 const getMyComplaints = (userId: string) =>

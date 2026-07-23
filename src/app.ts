@@ -22,12 +22,7 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://mahinulislam2208054.me",
-      "https://foodhub-frontend-flame.vercel.app",
-      ...(process.env.APP_URL ? [process.env.APP_URL] : []),
-    ],
+    origin: true,
     credentials: true,
   }),
 );

@@ -152,21 +152,20 @@ const getAnalytics = async (userId: string) => {
 const getNearbyRestaurants = async (
   userLat: number,
   userLng: number,
-  maxDistance: number = 10,
+  maxDistance: number = 15,
 ) => {
-  // Haversine formula query using Prisma raw query
   const result = await prisma.$queryRaw`
-      SELECT id, userId, name, email, latitude, longitude,
-      ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
-      * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
-      * sin( radians( latitude ) ) ) ) AS distance
-      FROM "ProvidersProfile"
-      WHERE latitude IS NOT NULL AND longitude IS NOT NULL
-      HAVING ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
-      * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
-      * sin( radians( latitude ) ) ) ) <= ${maxDistance}
-      ORDER BY distance ASC;
-    `;
+    SELECT id, name, email, latitude, longitude,
+    ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
+    * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
+    * sin( radians( latitude ) ) ) ) AS distance
+    FROM "ProvidersProfile"
+    WHERE latitude IS NOT NULL AND longitude IS NOT NULL
+    HAVING ( 6371 * acos( cos( radians(${userLat}) ) * cos( radians( latitude ) ) 
+    * cos( radians( longitude ) - radians(${userLng}) ) + sin( radians(${userLat}) ) 
+    * sin( radians( latitude ) ) ) ) <= ${maxDistance}
+    ORDER BY distance ASC;
+  `;
   return result;
 };
 

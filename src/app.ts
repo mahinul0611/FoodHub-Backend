@@ -14,6 +14,7 @@ import { meRouter } from "./modules/me/me.route";
 import { reviewRouter } from "./modules/reviews/review.route";
 import { categoryController } from "./modules/category/category.controller";
 import { phoneRoutes } from "./modules/phone/phone.route";
+import { complaintRoutes } from "./modules/complaint/complaint.route";
 
 
 const app: Application = express();
@@ -48,6 +49,7 @@ app.use("/provider",providerRouter)
 app.use("/orders",orderRouter)
 app.use("/phone", phoneRoutes);
 app.use("/reviews",reviewRouter)
+app.use("/complaints", complaintRoutes);
 
 app.use(notFound)
 app.use(errorHandler)

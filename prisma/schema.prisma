@@ -60,6 +60,25 @@ enum PaymentStatus {
   CANCELLED
 }
 
+enum DiscountType {
+  PERCENT
+  FLAT
+}
+
+model Coupon {
+  id           String       @id @default(uuid())
+  code         String       @unique
+  discountType DiscountType
+  value        Int
+  minOrder     Int          @default(0)
+  maxUses      Int?
+  usedCount    Int          @default(0)
+  active       Boolean      @default(true)
+  expiresAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
 model Complaint {
   id          String            @id @default(uuid())
   orderId     String
@@ -100,21 +119,24 @@ model Category {
 }
 
 model Orders {
-  id            String            @id @default(uuid())
-  userId        String
-  user          User              @relation(fields: [userId], references: [id])
-  providerId    String?
-  provider      ProvidersProfile? @relation(fields: [providerId], references: [id])
-  totalPrice    Decimal // Stored in cents (e.g., 1000 for $10.00)
-  address       String
-  contactNumber String            @db.VarChar(30)
-  status        OrdersStatus      @default(PLACED) // Ensure you have a default
-  paymentMethod PaymentMethod     @default(COD)
-  paymentStatus PaymentStatus     @default(UNPAID)
-  transactionId String?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  orderItems    OrderItems[]
+  id             String            @id @default(uuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id])
+  providerId     String?
+  provider       ProvidersProfile? @relation(fields: [providerId], references: [id])
+  totalPrice     Decimal // Stored in cents (e.g., 1000 for $10.00)
+  address        String
+  contactNumber  String            @db.VarChar(30)
+  status         OrdersStatus      @default(PLACED) // Ensure you have a default
+  paymentMethod  PaymentMethod     @default(COD)
+  paymentStatus  PaymentStatus     @default(UNPAID)
+  transactionId  String?
+  deliveryCharge Int               @default(0)
+  discount       Int               @default(0)
+  couponCode     String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  orderItems     OrderItems[]
 
   @@index([status])
   @@index([userId]) // Added index for customer order history lookup

@@ -1,23 +1,23 @@
 import { prisma } from "../../lib/prisma";
 
+import { couponService, DELIVERY_CHARGE } from "../coupon/coupon.service";
+
+
 const createOrder = async (userId: string, data: any) => {
+  
+  // Phone verification requirement — re-enable when needed
+  //   const orderingUser = await prisma.user.findUniqueOrThrow({
+  //   where: { id: userId },
+  // });
+  // if (!orderingUser.phoneVerified) {
+  //   throw new Error(
+  //     "Please verify your phone number before placing an order!",
+  //   );
+  // }
 
-
-// Phone verification requirement — re-enable when needed
-
-//   const orderingUser = await prisma.user.findUniqueOrThrow({
-//   where: { id: userId },
-// });
-
-// if (!orderingUser.phoneVerified) {
-//   throw new Error(
-//     "Please verify your phone number before placing an order!",
-//   );
-// }
   return await prisma.$transaction(
     async (tx) => {
       const mealIds = data.items.map((i: any) => i.mealsId);
-
       const meals = await tx.meals.findMany({
         where: { id: { in: mealIds } },
       });
@@ -31,7 +31,6 @@ const createOrder = async (userId: string, data: any) => {
         const meal = meals.find((m) => m.id === item.mealsId);
         const price = Number(meal?.price || 0);
         total += price * item.quantity;
-
         return {
           mealsId: item.mealsId,
           quantity: item.quantity,
@@ -39,12 +38,28 @@ const createOrder = async (userId: string, data: any) => {
         };
       });
 
-      return await tx.orders.create({
+      // Coupon + delivery charge
+      let discount = 0;
+      let appliedCode: string | null = null;
+      if (data.couponCode) {
+        const couponResult = await couponService.validateCoupon(
+          data.couponCode,
+          total,
+        );
+        discount = couponResult.discount;
+        appliedCode = couponResult.code;
+      }
+      const totalPrice = Math.max(0, total + DELIVERY_CHARGE - discount);
+
+      const order = await tx.orders.create({
         data: {
           userId,
           address: data.address,
           contactNumber: data.contactNumber,
-          totalPrice: total,
+          totalPrice,
+          deliveryCharge: DELIVERY_CHARGE,
+          discount,
+          couponCode: appliedCode,
           status: "PLACED",
           providerId: meals[0]!.providerId,
           orderItems: {
@@ -52,6 +67,15 @@ const createOrder = async (userId: string, data: any) => {
           },
         },
       });
+
+      if (appliedCode) {
+        await tx.coupon.update({
+          where: { code: appliedCode },
+          data: { usedCount: { increment: 1 } },
+        });
+      }
+
+      return order;
     },
     {
       timeout: 20000,

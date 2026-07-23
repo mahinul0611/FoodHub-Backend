@@ -70,6 +70,7 @@ model Coupon {
   code         String       @unique
   discountType DiscountType
   value        Int
+  maxDiscount  Int?
   minOrder     Int          @default(0)
   maxUses      Int?
   usedCount    Int          @default(0)

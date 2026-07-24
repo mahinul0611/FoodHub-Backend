@@ -41,7 +41,7 @@ app.use("/admin", adminRouter);
 
 app.use("/me", meRouter);
 
-app.get("/category", categoryRouter);
+app.get("/category", categoryController.getAllCategory);
 
 app.use("/admin", categoryRouter);
 app.use("/meals", mealsRouter);

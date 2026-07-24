@@ -31,7 +31,7 @@ router.put(
 
 
 router.delete(
-  "/:id",
+  "/category/:categoryId",
   auth(UserRole.ADMIN),
   categoryController.deleteCategory
 );

@@ -116,7 +116,7 @@ export const toolHandlers = {
         },
       });
 
-      return `Apanar order-ti successfully confirm hoye geche! 🎉\n\n📦 **Order Summary:**\n- **Item:** ${meal.name}\n- **Quantity:** ${args.quantity}\n- **Phone:** ${cleanPhone}\n- **Address:** ${args.address}\n- **Total Bill:** ${totalAmount} BDT\n- **Order ID:** #${newOrder.id}\n\nAmader delivery agent khub shighro apnar sathe jogajog korbe! Thank you! 😊`;
+      return `Apnar order-ti successfully confirm hoye geche! 🎉\n\n📦 **Order Summary:**\n- **Item:** ${meal.name}\n- **Quantity:** ${args.quantity}\n- **Phone:** ${cleanPhone}\n- **Address:** ${args.address}\n- **Total Bill:** ${totalAmount} BDT\n- **Order ID:** #${newOrder.id}\n\nAmader delivery agent khub shighro apnar sathe jogajog korbe! Thank you! 😊`;
     } catch (error) {
       console.error("Database Order Creation Error:", error);
       return "Dukhito, system-e somossa hobar karone order-ti complete kora jacche na.";

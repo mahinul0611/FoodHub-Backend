@@ -12,21 +12,25 @@ const groq = new Groq({ apiKey });
 const generateChatResponseFromAI = async (
   message: string,
 ): Promise<string> => {
-  // ১. Prisma দিয়ে ডাটাবেজ থেকে খাবার ফেচ করা
+  // ১. category-এর ভেতর থেকে specific field (যেমন: name) সিলেক্ট করা
   const availableMeals = await prisma.meals.findMany({
     select: {
       name: true,
       price: true,
-      category: true, // ক্যাটাগরি যদি রিলেশন হয় তবে category: { select: { name: true } } দিয়ে নিও
+      category: {
+        select: {
+          name: true, // 👈 ক্যাটাগরির নামের ফিল্ড যদি 'name' না হয়ে 'title' হয়, তবে 'title: true' দেবে
+        },
+      },
     },
-    take: 15, // একসাথে প্রম্পটের জন্য ১৫টি খাবার ফেচ করবে
+    take: 15,
   });
 
-  // ২. ডাটাবেজের ডেটাকে টেক্সট ফরম্যাটে সাজানো
+  // ২. meal.category?.name ব্যবহার করা
   const menuContext = availableMeals
     .map(
       (meal) =>
-        `- Name: ${meal.name}, Category: ${meal.category}, Price: ${meal.price} BDT`
+        `- Name: ${meal.name}, Category: ${meal.category?.name || "General"}, Price: ${meal.price} BDT`
     )
     .join("\n");
 

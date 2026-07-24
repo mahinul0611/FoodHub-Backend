@@ -12,7 +12,7 @@ if (!apiKey) {
 const groq = new Groq({ apiKey });
 
 const generateChatResponseFromAI = async (
-  chatHistory: ChatMessage[]
+  chatHistory: ChatMessage[],
 ): Promise<string> => {
   const safeHistory = Array.isArray(chatHistory) ? chatHistory : [];
 
@@ -36,7 +36,7 @@ const generateChatResponseFromAI = async (
   const menuContext = availableMeals
     .map(
       (meal) =>
-        `- Item: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`
+        `- Item: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`,
     )
     .join("\n");
 
@@ -70,6 +70,7 @@ const generateChatResponseFromAI = async (
    - Quantity
    - Customer's Phone Number
    - Delivery Address
+   
 2. IF ANY DETAIL IS MISSING WHEN USER WANTS TO ORDER:
    - DO NOT call the "confirmFoodOrder" tool yet.
    - Politely ask the user to provide the missing details (e.g., "Order confirm korte apnar phone number r delivery address-ta diben please?").
@@ -81,6 +82,13 @@ const generateChatResponseFromAI = async (
 
 --- 🍔 DATABASE MENU (ONLY SUGGEST FROM THIS) ---
 ${menuContext}
+
+
+--- 🛑 STRICT TOOL CALLING RULES (PREVENT HALLUCINATIONS) ---
+1. NEVER guess, hallucinate, invent, or fill dummy values for "phoneNumber" or "address".
+2. IF USER PROVIDES ONLY ADDRESS: DO NOT invent a phone number. Politely ask for their 11-digit phone number first.
+3. IF USER PROVIDES ONLY PHONE NUMBER: DO NOT invent an address. Politely ask for their delivery address first.
+4. ONLY call "confirmFoodOrder" when BOTH an explicit valid phone number AND explicit address are present in the conversation.
 
 --- 📌 CRITICAL INSTRUCTIONS ---
 1. STRICTLY NEVER recommend any food item that is NOT present in the DATABASE MENU above.

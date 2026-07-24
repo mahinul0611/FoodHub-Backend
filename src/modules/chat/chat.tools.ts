@@ -8,7 +8,7 @@ export const chatTools: Groq.Chat.Completions.ChatCompletionTool[] = [
     function: {
       name: "confirmFoodOrder",
       description:
-        "Creates and confirms a food order in the database when the user provides item name, quantity, contact phone number, AND full delivery address.",
+        "Creates and confirms a food order ONLY when the user explicitly provides BOTH a valid contact phone number AND a full delivery address.",
       parameters: {
         type: "object",
         properties: {
@@ -26,7 +26,7 @@ export const chatTools: Groq.Chat.Completions.ChatCompletionTool[] = [
           },
           address: {
             type: "string",
-            description: "Full delivery address provided by the customer.",
+            description: "Full, detailed delivery address provided explicitly by the user.",
           },
         },
         required: ["itemName", "quantity", "phoneNumber", "address"],
@@ -38,7 +38,26 @@ export const chatTools: Groq.Chat.Completions.ChatCompletionTool[] = [
 export const toolHandlers = {
   confirmFoodOrder: async (args: OrderInput) => {
     try {
-      // ১. ডাটাবেজ থেকে এভেইলএবল খাবারটি বের করা
+      // 🛑 ১. ফোন নম্বর ভ্যালিডেশন (BD Phone Regex: 013-019 দিয়ে শুরু ১১ ডিজিট)
+      const cleanPhone = args.phoneNumber ? args.phoneNumber.replace(/[-_ ]/g, "") : "";
+      const bdPhoneRegex = /^01[3-9]\d{8}$/;
+
+      if (!cleanPhone || !bdPhoneRegex.test(cleanPhone)) {
+        return "Apnar delivery address-ti peyechi! 📍 Order-ti confirm korar jonno apnar 11-digit-er valid contact phone number-ta (e.g. 017xxxxxxxx) kindly ektu diben?";
+      }
+
+      // 🛑 ২. ঠিকানা ভ্যালিডেশন
+      const isGenericAddress =
+        !args.address ||
+        args.address.trim().length < 4 ||
+        args.address.toLowerCase() === "dhaka" ||
+        args.address.toLowerCase().includes("not provided");
+
+      if (isGenericAddress) {
+        return "Apnar phone number-ti peyechi! 📱 Order-ti complete korte apnar full delivery address-ta (House/Road/Area) kindly ektu bolben?";
+      }
+
+      // ৩. খাবার আছে কিনা চেক
       const meal = await prisma.meals.findFirst({
         where: {
           name: {
@@ -54,9 +73,9 @@ export const toolHandlers = {
         return `Dukhito! "${args.itemName}" নামে কোনো খাবার বর্তমানে পাওয়া যাচ্ছে না।`;
       }
 
-      // ২. ফোন নম্বর দিয়ে ইউজার চেক করা (না থাকলে Guest User তৈরি)
+      // ৪. ইউজার চেক/ক্রিয়েট
       let user = await prisma.user.findFirst({
-        where: { phone: args.phoneNumber },
+        where: { phone: cleanPhone },
       });
 
       if (!user) {
@@ -66,28 +85,26 @@ export const toolHandlers = {
             id: uniqueId,
             name: "Guest Customer",
             email: `${uniqueId}@foodhub.com`,
-            phone: args.phoneNumber,
+            phone: cleanPhone,
           },
         });
       }
 
-      // ৩. মোট প্রাইস হিসাব
       const unitPrice = Number(meal.price);
       const totalAmount = unitPrice * args.quantity;
 
-      // ৪. Schema অনুযায়ী exact field name দিয়ে Orders & OrderItems তৈরি
+      // ৫. অর্ডার ক্রিয়েট
       const newOrder = await prisma.orders.create({
         data: {
           userId: user.id,
           providerId: meal.providerId,
           totalPrice: totalAmount,
-          address: args.address, // 👈 schema.prisma-র address
-          contactNumber: args.phoneNumber, // 👈 schema.prisma-র contactNumber
-          status: "PLACED", // 👈 OrdersStatus Enum
-          paymentMethod: "COD", // 👈 PaymentMethod Enum
-          paymentStatus: "UNPAID", // 👈 PaymentStatus Enum
+          address: args.address,
+          contactNumber: cleanPhone,
+          status: "PLACED",
+          paymentMethod: "COD",
+          paymentStatus: "UNPAID",
           orderItems: {
-            // 👈 OrderItems টেবিলে রিলেশন
             create: [
               {
                 mealsId: meal.id,
@@ -99,7 +116,7 @@ export const toolHandlers = {
         },
       });
 
-      return `Apanar order-ti successfully confirm hoye geche! 🎉\n\n📦 **Order Summary:**\n- **Item:** ${meal.name}\n- **Quantity:** ${args.quantity}\n- **Phone:** ${args.phoneNumber}\n- **Address:** ${args.address}\n- **Total Bill:** ${totalAmount} BDT\n- **Order ID:** #${newOrder.id}\n\nAmader delivery agent khub shighro apnar sathe jogajog korbe! Thank you! 😊`;
+      return `Apanar order-ti successfully confirm hoye geche! 🎉\n\n📦 **Order Summary:**\n- **Item:** ${meal.name}\n- **Quantity:** ${args.quantity}\n- **Phone:** ${cleanPhone}\n- **Address:** ${args.address}\n- **Total Bill:** ${totalAmount} BDT\n- **Order ID:** #${newOrder.id}\n\nAmader delivery agent khub shighro apnar sathe jogajog korbe! Thank you! 😊`;
     } catch (error) {
       console.error("Database Order Creation Error:", error);
       return "Dukhito, system-e somossa hobar karone order-ti complete kora jacche na.";

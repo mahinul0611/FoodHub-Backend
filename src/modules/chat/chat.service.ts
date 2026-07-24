@@ -1,7 +1,6 @@
 import Groq from "groq-sdk";
 import { prisma } from "../../lib/prisma";
 import { ChatMessage } from "./chat.types";
-import { chatTools, toolHandlers } from "./chat.tools";
 
 const apiKey = process.env.GROQ_API_KEY;
 
@@ -11,10 +10,106 @@ if (!apiKey) {
 
 const groq = new Groq({ apiKey });
 
+// 🛠️ টাইপ-সেফ #ORDER ফরম্যাট পার্সিং
+const parseOrderFormat = (text: string) => {
+  const itemMatch = text.match(/Item:\s*(.+)/i);
+  const qtyMatch = text.match(/Quantity:\s*(\d+)/i);
+  const phoneMatch = text.match(/Phone:\s*(01[3-9]\d{8})/i);
+  const addressMatch = text.match(/Address:\s*(.+)/i);
+
+  // 👈 Safe optional chaining দিয়ে undefined এরর আটকানো হয়েছে
+  const itemName = itemMatch?.[1]?.trim();
+  const quantityStr = qtyMatch?.[1]?.trim();
+  const phoneNumber = phoneMatch?.[1]?.trim();
+  const address = addressMatch?.[1]?.trim();
+
+  if (itemName && quantityStr && phoneNumber && address) {
+    return {
+      itemName,
+      quantity: parseInt(quantityStr, 10),
+      phoneNumber,
+      address,
+    };
+  }
+  return null;
+};
+
 const generateChatResponseFromAI = async (
   chatHistory: ChatMessage[],
+  userId?: string
 ): Promise<string> => {
   const safeHistory = Array.isArray(chatHistory) ? chatHistory : [];
+  
+  // 👈 টাইপ-সেফ অ্যারে ইনডেক্সিং
+  const lastMsg = safeHistory.length > 0 ? safeHistory[safeHistory.length - 1] : undefined;
+  const latestUserMessage = lastMsg?.text || "";
+
+  // 🛑 ১. #ORDER ফরম্যাট প্রসেসিং
+  if (latestUserMessage.startsWith("#ORDER")) {
+    if (!userId) {
+      return "Dukhito! Order place korar jonno apnake prothome account-e Log In korte hobe. Kindly Login kare abar try korun! 🔐";
+    }
+
+    const orderData = parseOrderFormat(latestUserMessage);
+
+    if (!orderData) {
+      return `❌ Apnar order format-ti thik nei! Kindly ei format-e likhun:\n\n#ORDER\nItem: [Food Name]\nQuantity: [Number]\nPhone: [01XXXXXXXXX]\nAddress: [Full Address]`;
+    }
+
+    try {
+      const meal = await prisma.meals.findFirst({
+        where: {
+          name: { contains: orderData.itemName, mode: "insensitive" },
+          isDeleted: false,
+          status: "AVAILABLE",
+        },
+      });
+
+      if (!meal) {
+        return `Dukhito! "${orderData.itemName}" নামে কোনো খাবার বর্তমানে পাওয়া যাচ্ছে না।`;
+      }
+
+      const loggedInUser = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!loggedInUser) {
+        return "Apnar user account-ti paowa jayni. Kindly re-login kore try korun.";
+      }
+
+      const totalAmount = Number(meal.price) * orderData.quantity;
+
+      const newOrder = await prisma.orders.create({
+        data: {
+          userId: loggedInUser.id,
+          providerId: meal.providerId,
+          totalPrice: totalAmount,
+          address: orderData.address,
+          contactNumber: orderData.phoneNumber,
+          status: "PLACED",
+          paymentMethod: "COD",
+          paymentStatus: "UNPAID",
+          orderItems: {
+            create: [
+              {
+                mealsId: meal.id,
+                price: meal.price,
+                quantity: orderData.quantity,
+              },
+            ],
+          },
+        },
+      });
+
+      return `Apanar order-ti successfully confirm hoye geche! 🎉\n\n📦 **Order Summary:**\n- **Item:** ${meal.name}\n- **Quantity:** ${orderData.quantity}\n- **Phone:** ${orderData.phoneNumber}\n- **Address:** ${orderData.address}\n- **Total Bill:** ${totalAmount} BDT\n- **Order ID:** #${newOrder.id}\n\nAmader delivery agent khub shighro apnar sathe jogajog korbe! Thank you! 😊`;
+    } catch (error) {
+      console.error("Order DB Error:", error);
+      return "Dukhito, order-ti process kora jacche na.";
+    }
+  }
+
+  // ⚡ ২. টোকেন বাঁচানোর জন্য চ্যাট হিস্ট্রি ফিল্টারিং
+  const recentHistory = safeHistory.slice(-6);
 
   const availableMeals = await prisma.meals.findMany({
     where: {
@@ -24,36 +119,33 @@ const generateChatResponseFromAI = async (
     select: {
       name: true,
       price: true,
-      category: {
-        select: {
-          name: true,
-        },
-      },
+      category: { select: { name: true } },
     },
-    take: 25,
+    take: 15,
   });
 
   const menuContext = availableMeals
     .map(
       (meal) =>
-        `- Item: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`,
+        `- Item: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`
     )
     .join("\n");
 
-  const formattedHistory = safeHistory.map((msg) => ({
+  const formattedHistory = recentHistory.map((msg) => ({
     role: msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
-    content: msg.text,
+    content: msg.text || "",
   }));
 
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    temperature: 0.4, // 👈 0.3 দিলে AI আরও বেশি রুল মেনে চলবে
-    messages: [
-      {
-        role: "system",
-        content: `You are "FoodHub Assistant", a lively, friendly, and smart AI customer support agent for FoodHub Bangladesh.
+  try {
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      temperature: 0.4,
+      messages: [
+        {
+          role: "system",
+          content: `You are "FoodHub Assistant", a lively, friendly, and smart AI customer support agent for FoodHub Bangladesh.
 
---- 🗣️ LANGUAGE, TONE & BEHAVIOR RULES ---
+--- 🗣 LANGUAGE, TONE & BEHAVIOR RULES ---
 - Respond in natural, conversational, everyday Banglish (Bengali written in English alphabets).
 - Sound like a helpful support agent from Bangladesh.
 - Use bullet points and relevant emojis to make responses visually engaging.
@@ -64,60 +156,44 @@ const generateChatResponseFromAI = async (
 - Always maintain full conversation context using previous messages.
 - DO NOT repeat yourself or send identical sentences.
 
-
---- 🛑 STRICT TOOL CALLING RULES (PREVENT HALLUCINATIONS) ---
-1. NEVER guess, hallucinate, invent, or fill dummy values for "phoneNumber" or "address".
-2. IF USER PROVIDES ONLY ADDRESS: DO NOT invent a phone number. Politely ask for their 11-digit phone number first.
-3. IF USER PROVIDES ONLY PHONE NUMBER: DO NOT invent an address. Politely ask for their delivery address first.
-4. ONLY call "confirmFoodOrder" when BOTH an explicit valid phone number AND explicit address are present in the conversation.
---- 🛒 MANDATORY ORDERING RULES ---
-1. To place an order, you MUST have ALL 4 required details:
-   - Item Name
-   - Quantity
-   - Customer's Phone Number
-   - Delivery Address
-   
-2. IF ANY DETAIL IS MISSING WHEN USER WANTS TO ORDER:
-   - DO NOT call the "confirmFoodOrder" tool yet.
-   - Politely ask the user to provide the missing details (e.g., "Order confirm korte apnar phone number r delivery address-ta diben please?").
-3. ONLY call "confirmFoodOrder" tool AFTER collecting ALL required details.
-
---- 🛑 CRITICAL RULE TO PREVENT DUPLICATE ORDERS (MUST FOLLOW) ---
-- ONLY call "confirmFoodOrder" if the user's LATEST/MOST RECENT message is explicitly asking to place a NEW order or providing the requested phone/address.
-- IF THE ORDER HAS ALREADY BEEN CONFIRMED IN PREVIOUS MESSAGES: DO NOT CALL "confirmFoodOrder" AGAIN! Just answer the user's latest question normally (e.g. delivery time, general queries, thank you replies).
-
---- 🍔 DATABASE MENU (ONLY SUGGEST FROM THIS) ---
-${menuContext}
-
-
-
 --- 📌 CRITICAL INSTRUCTIONS ---
 1. STRICTLY NEVER recommend any food item that is NOT present in the DATABASE MENU above.
 2. If the asked item is unavailable, politely decline in Banglish and suggest an item from the menu.
-3. Keep replies short, accurate, structured, and helpful.`,
-      },
-      ...formattedHistory,
-    ],
-    tools: chatTools,
-    tool_choice: "auto",
-  });
+3. Keep replies short, accurate, structured, and helpful.
 
-  const responseMessage = completion.choices[0]?.message;
 
-  const toolCall = responseMessage?.tool_calls?.[0];
+--- 🛒 MANDATORY ORDERING RULES ---
+1. You CANNOT place orders directly by yourself.
+2. ONLY LOGGED-IN USERS can order food.
+3. If a user asks to order food, guide them to copy and send this EXACT format:
 
-  if (toolCall) {
-    const toolName = toolCall.function.name as keyof typeof toolHandlers;
 
-    if (toolHandlers[toolName]) {
-      const args = JSON.parse(toolCall.function.arguments);
-      return await toolHandlers[toolName](args);
+
+#ORDER
+Item: [Exact Food Name]
+Quantity: [Number]
+Phone: [01XXXXXXXXX]
+Address: [Full Delivery Address]
+
+--- 🍔 DATABASE MENU ---
+${menuContext}
+
+--- 📌 CRITICAL INSTRUCTIONS ---
+1. STRICTLY NEVER recommend any food item that is NOT present in the DATABASE MENU above.
+2. Keep replies short, accurate, structured, and helpful.`,
+        },
+        ...formattedHistory,
+      ],
+    });
+
+    const choice = completion.choices?.[0];
+    return choice?.message?.content || "Sorry, I can't process your request right now.";
+  } catch (error: any) {
+    if (error?.status === 429 || error?.message?.includes("429")) {
+      return "Amader AI server-e ektu bhir besi. Kindly 2-3 minute por abar try korun! 🙏";
     }
+    throw error;
   }
-
-  return (
-    responseMessage?.content || "Sorry, I can't process your request right now."
-  );
 };
 
 export const chatService = {

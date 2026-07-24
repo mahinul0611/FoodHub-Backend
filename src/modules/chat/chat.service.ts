@@ -1,29 +1,37 @@
-import { GoogleGenAI } from "@google/genai";
+import Groq from "groq-sdk";
 
-const apiKey = process.env.GEMINI_API_KEY;
+const apiKey = process.env.GROQ_API_KEY;
 
 if (!apiKey) {
-  throw new Error("GEMINI_API_KEY is not defined in environment variables");
+  throw new Error("GROQ_API_KEY is not defined in environment variables");
 }
 
-const ai = new GoogleGenAI({
-  apiKey, // 👈 এখন TypeScript নিশ্চিত যে এটি একটি string
-});
- const generateChatResponseFromAI = async (
+const groq = new Groq({ apiKey });
+
+const generateChatResponseFromAI = async (
   message: string,
 ): Promise<string> => {
-  const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
-    contents: message,
-    config: {
-      systemInstruction:
-        "You are a friendly and helpful AI customer support agent for FoodHub, an online food delivery platform. Help users with food recommendations, order tracking, restaurant inquiries, and general queries politely and concisely in a conversational tone.",
-    },
+  const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are a friendly and helpful AI customer support agent for FoodHub, an online food delivery platform. Help users with food recommendations, order tracking, restaurant inquiries, and general queries politely and concisely in a conversational tone.",
+      },
+      {
+        role: "user",
+        content: message,
+      },
+    ],
+    model: "llama-3.3-70b-versatile",
   });
 
-  return response.text || "Sorry, I couldn't process GEMINI MODEL";
+  return (
+    completion.choices[0]?.message?.content ||
+    "Sorry, I couldn't process that."
+  );
 };
 
-export const chatService ={
-generateChatResponseFromAI
-}
+export const chatService = {
+  generateChatResponseFromAI,
+};

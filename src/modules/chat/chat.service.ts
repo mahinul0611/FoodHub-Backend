@@ -1,5 +1,5 @@
 import Groq from "groq-sdk";
-import { prisma } from "../../lib/prisma";
+import prisma from "../shared/prisma"; // 👈 তোমার প্রজেক্টের prisma instance
 
 const apiKey = process.env.GROQ_API_KEY;
 
@@ -12,44 +12,55 @@ const groq = new Groq({ apiKey });
 const generateChatResponseFromAI = async (
   message: string,
 ): Promise<string> => {
-  // ১. category-এর ভেতর থেকে specific field (যেমন: name) সিলেক্ট করা
-  const availableMeals = await prisma.meals.findMany({
+  // ১. Prisma দিয়ে ডাটাবেজ থেকে খাবার ফেচ করা
+  const availableMeals = await prisma.meal.findMany({
     select: {
       name: true,
       price: true,
       category: {
         select: {
-          name: true, // 👈 ক্যাটাগরির নামের ফিল্ড যদি 'name' না হয়ে 'title' হয়, তবে 'title: true' দেবে
+          name: true,
         },
       },
     },
-    take: 15,
+    take: 20,
   });
 
-  // ২. meal.category?.name ব্যবহার করা
+  // ২. ডাটাবেজের ডেটাকে ফরমেট করা
   const menuContext = availableMeals
     .map(
       (meal) =>
-        `- Name: ${meal.name}, Category: ${meal.category?.name || "General"}, Price: ${meal.price} BDT`
+        `- Name: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`
     )
     .join("\n");
 
-  // ৩. Groq এপিআই-তে প্রম্পট পাঠানো
+  // ৩. Groq এপিআই কল করা (আপডেট করা সিস্টেম প্রম্পটসহ)
   const completion = await groq.chat.completions.create({
     messages: [
       {
         role: "system",
-        content: `You are a friendly customer support AI agent for FoodHub, an online food delivery platform.
-The user will often talk in Banglish (Bengali in English letters), Bangla, or English. Always respond in clear, friendly Banglish (or English if the user talks in pure English).
+        content: `You are "FoodHub Assistant", a super friendly, polite, and helpful AI customer support agent for FoodHub (an online food delivery app in Bangladesh).
 
-LIVE FOODHUB MENU FROM DATABASE:
+--- 🗣️ LANGUAGE & FLUENCY RULES ---
+1. Primary Language (Banglish): Respond in natural, fluent Banglish (Bengali words written in English/Roman alphabet) as used in casual Bangladeshi chat.
+   - Good Examples: "Ji sure! Apanar jonno kichu moja kabar suggest korchi...", "Ei item-ta try kore dekhte paren!", "Budget-er moddhe chaitile amader kache eigula ache..."
+   - Avoid robotic translations. Speak like a real human customer support staff in Bangladesh.
+2. User Language Matching:
+   - If user writes in Banglish (e.g., "kono biryani ache?"), reply in fluent Banglish.
+   - If user writes in Bangla script (e.g., "কোন বিরিয়ানি আছে?"), reply in natural Banglish or polite Bangla.
+   - If user writes in pure English (e.g., "What are the available foods?"), reply in simple English.
+
+--- 🍔 LIVE FOODHUB MENU FROM DATABASE ---
 ${menuContext}
 
-INSTRUCTIONS FOR FOOD SUGGESTIONS:
-- Whenever user asks for food suggestions, recommendations, or budget options, strictly suggest from the "LIVE FOODHUB MENU" provided above.
-- Mention the item name, category, and exact price in BDT.
-- Do not make up any food item that is not in the list above.
-- Keep responses concise, conversational, and natural.`,
+--- 📌 INSTRUCTIONS FOR FOOD RECOMMENDATIONS ---
+- STRICT RULE: ALWAYS suggest foods ONLY from the "LIVE FOODHUB MENU" listed above. Never invent, hallucinate, or suggest any food outside this list.
+- When suggesting food, clearly state:
+  1. Item Name
+  2. Category
+  3. Price in BDT (e.g., "350 Taka" or "350 BDT")
+- If a user asks for an item NOT in our menu (e.g., Pizza, if Pizza isn't in menu), say politely in Banglish that it's currently unavailable and suggest available alternatives from the menu.
+- Keep replies short, well-structured (use bullet points for multiple items), and helpful.`,
       },
       {
         role: "user",

@@ -8,12 +8,13 @@ const getAllUsers = async () => {
       id: true,
       name: true,
       email: true,
-      phone:true,
+      phone: true,
       role: true,
       status: true,
       createdAt: true,
     },
     orderBy: { createdAt: "desc" },
+    take: 50, // Limit kore dilam jate query fast hoy
   });
 
   return result;
@@ -133,7 +134,6 @@ const getAllOrders = async () => {
   };
 };
 
-
 const removeProvider = async (providerId: string) => {
   const provider = await prisma.providersProfile.findUnique({
     where: { userId: providerId },
@@ -166,8 +166,6 @@ const removeProvider = async (providerId: string) => {
   return { message: "Provider and associated meals successfully removed." };
 };
 
-
-
 const getLoginSessions = async () => {
   // Session table theke latest 50 ta login history fetch kora hocche
   const sessions = await prisma.session.findMany({
@@ -189,7 +187,6 @@ const getLoginSessions = async () => {
 
   return sessions;
 };
-
 
 export const adminService = {
   getAllUsers,

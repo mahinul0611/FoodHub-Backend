@@ -26,27 +26,6 @@ const createCategory = async (req: Request, res: Response) => {
   }
 };
 
-const updateCategory = async (req: Request, res: Response) => {
-  try {
-    const user = req.user;
-
-    console.log({ user });
-    if (user?.role !== UserRole.ADMIN) {
-      throw new Error("Sorry! You are not allowed to update category!");
-    }
-
-    const { categoryId } = req.params;
-
-    const result = await categoryService.updateCategory(
-      categoryId as string,
-      req.body,
-    );
-    res.status(201).json({ success: true, data: result });
-  } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
-
 const getAllCategory = async (req: Request, res: Response) => {
   try {
     const result = await categoryService.getAllCategory();
@@ -89,9 +68,53 @@ const getCategoryById = async (req: Request, res: Response) => {
   }
 };
 
+
+const updateCategory = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+
+    console.log({ user });
+    if (user?.role !== UserRole.ADMIN) {
+      throw new Error("Sorry! You are not allowed to update category!");
+    }
+
+    const { categoryId } = req.params;
+
+    const result = await categoryService.updateCategory(
+      categoryId as string,
+      req.body,
+    );
+    res.status(201).json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+
+const deleteCategory = async (req: Request, res: Response) => {
+  const categoryId = req.params.id;
+  if (typeof categoryId !== "string" || !categoryId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Category id is required!" });
+  }
+  try {
+    const result = await categoryService.deleteCategory(categoryId);
+    return res.status(200).json({ success: true, data: result });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message:
+        err instanceof Error ? err.message : "Failed to delete category!",
+    });
+  }
+};
+
+
 export const categoryController = {
   createCategory,
   updateCategory,
   getAllCategory,
   getCategoryById,
+  deleteCategory,
 };

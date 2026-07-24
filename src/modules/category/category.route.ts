@@ -16,16 +16,23 @@ router.get(
   categoryController.getCategoryById,
 );
 
-router.put(
-  "/category/:categoryId",
-  auth(UserRole.ADMIN),
-  categoryController.updateCategory,
-);
-
 router.post(
   "/category",
   auth(UserRole.ADMIN),
   categoryController.createCategory,
 );
 
+router.put(
+  "/category/:categoryId",
+  auth(UserRole.ADMIN),
+  categoryController.updateCategory,
+);
+
+
+
+router.delete(
+  "/:id",
+  auth(UserRole.ADMIN),
+  categoryController.deleteCategory
+);
 export const categoryRouter = router;

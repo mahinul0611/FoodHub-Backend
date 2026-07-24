@@ -10,33 +10,6 @@ const createCategory = async (payload: { name: string }) => {
 };
 
 
-const updateCategory = async (categoryId:string, data:Partial<Category>)=>{
-
-
-
-   const categoryData = await prisma.category.findUniqueOrThrow({
-    where:{
-      id:categoryId
-    }
-  })
-
-  if(!categoryData){
-    throw new Error("No category Found!");
-  }
-
-
-  const result = await prisma.category.update({
-    where:{
-      id:categoryId
-    },
-    data
-  })
-
-return result
-
-
-}
-
 
 const getAllCategory= async ()=>{
 
@@ -68,10 +41,48 @@ return result
 }
 
 
+const updateCategory = async (categoryId:string, data:Partial<Category>)=>{
+
+
+
+   const categoryData = await prisma.category.findUniqueOrThrow({
+    where:{
+      id:categoryId
+    }
+  })
+
+  if(!categoryData){
+    throw new Error("No category Found!");
+  }
+
+
+  const result = await prisma.category.update({
+    where:{
+      id:categoryId
+    },
+    data
+  })
+
+return result
+
+
+}
+
+
+
+const deleteCategory = async (id: string) => {
+  const result = await prisma.category.delete({
+    where: { id },
+  });
+  return result;
+};
+
+
 
 export const categoryService = {
   createCategory,
   updateCategory,
   getAllCategory,
-  getCategoryById
+  getCategoryById,
+  deleteCategory
 };

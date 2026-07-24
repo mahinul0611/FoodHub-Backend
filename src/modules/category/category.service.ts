@@ -70,9 +70,10 @@ return result
 
 
 
-const deleteCategory = async (id: string) => {
+const deleteCategory = async (categoryId: string) => {
   const result = await prisma.category.delete({
-    where: { id },
+    where: {
+      id: categoryId },
   });
   return result;
 };

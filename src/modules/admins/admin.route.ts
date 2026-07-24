@@ -2,6 +2,8 @@ import express from "express";
 import { adminController } from "./admin.controller";
 import auth from "../../middleware/auth";
 import { UserRole } from "../../lib/auth";
+import validateRequest from "../../middleware/validateRequest";
+import { updateUserSchema } from "../user/user.validation";
 
 const router = express.Router();
 
@@ -13,6 +15,7 @@ router.get("/users/:userId", auth(UserRole.ADMIN), adminController.getUserById);
 router.put(
   "/users/:userId",
   auth(UserRole.ADMIN),
+  validateRequest(updateUserSchema),
   adminController.updateUserStatus,
 );
 

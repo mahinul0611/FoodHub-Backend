@@ -16,7 +16,7 @@ const handleChatMessage = async (req: Request, res: Response) => {
     }
 
     // 👈 সার্ভিস ফাংশনে messages-এর সাথে userId পাস করা হলো
-    const reply = await chatService.generateChatResponseFromAI(messages, userId);
+    const reply = await chatService.generateChatResponseFromAI(messages);
 
     return res.status(200).json({
       success: true,

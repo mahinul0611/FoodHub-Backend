@@ -14,7 +14,19 @@ const getUserInfo= async (userId:string )=>{
 }
 
 
+const updateMyInfo = async (userId: string, payload: { name?: string; phone?: string; image?: string }) => {
+  const result = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: payload,
+  });
+
+  return result;
+};
+
 
 export const meServcie= {
-    getUserInfo
+    getUserInfo,
+    updateMyInfo
 }

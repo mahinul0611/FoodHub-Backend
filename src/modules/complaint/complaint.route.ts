@@ -14,6 +14,7 @@ router.get("/admin", auth(UserRole.ADMIN), complaintController.admin);
 router.patch(
   "/:id",
   auth(UserRole.PROVIDER, UserRole.ADMIN),
+  
   complaintController.update,
 );
 

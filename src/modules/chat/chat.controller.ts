@@ -1,16 +1,16 @@
 import { Request, Response } from "express";
 import { chatService } from "./chat.service";
 
-const handleChatmessages = async (req: Request, res: Response) => {
+ const handleChatMessage = async (req: Request, res: Response) => {
   try {
-    const { messages } = req.body;
+    const { message } = req.body;
 
-    if (!messages) {
-      return res.status(400).json({ messages: "messages is required" });
+    if (!message) {
+      return res.status(400).json({ message: "Message is required" });
     }
 
     // সার্ভিস থেকে এআই রেসপন্স নিয়ে আসা
-    const reply = await chatService.generateChatResponseFromAI(messages);
+    const reply = await chatService.generateChatResponseFromAI(message);
 
     return res.status(200).json({
       success: true,
@@ -20,11 +20,12 @@ const handleChatmessages = async (req: Request, res: Response) => {
     console.error("Chat AI Error:", error);
     return res.status(500).json({
       success: false,
-      messages: error.messages || "Internal Server Error",
+      message: error.message || "Internal Server Error",
     });
   }
 };
 
+
 export const chatController = {
-  handleChatmessages,
-};
+    handleChatMessage
+}

@@ -29,8 +29,7 @@ const create = async (req: Request, res: Response) => {
   } catch (err) {
     return res.status(400).json({
       success: false,
-      message:
-        err instanceof Error ? err.message : "Failed to create coupon!",
+      message: err instanceof Error ? err.message : "Failed to create coupon!",
     });
   }
 };
@@ -55,10 +54,33 @@ const update = async (req: Request, res: Response) => {
   } catch (err) {
     return res.status(400).json({
       success: false,
-      message:
-        err instanceof Error ? err.message : "Failed to update coupon!",
+      message: err instanceof Error ? err.message : "Failed to update coupon!",
     });
   }
 };
 
-export const couponController = { validate, create, list, update };
+const deleteCoupon = async (req: Request, res: Response) => {
+  const couponId = req.params.id;
+  if (typeof couponId !== "string" || !couponId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Coupon id is required!" });
+  }
+  try {
+    const coupon = await couponService.deleteCoupon(couponId);
+    return res.status(200).json({ success: true, data: coupon });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err instanceof Error ? err.message : "Failed to delete coupon!",
+    });
+  }
+};
+
+export const couponController = {
+  validate,
+  create,
+  list,
+  update,
+  deleteCoupon,
+};

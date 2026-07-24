@@ -77,10 +77,19 @@ const listCoupons = async () =>
 const updateCoupon = async (id: string, data: { active?: boolean }) =>
   prisma.coupon.update({ where: { id }, data });
 
+const deleteCoupon = async (id: string) => {
+  const result = await prisma.coupon.delete({
+    where: { id },
+  });
+  return result;
+};
+
+
 export const couponService = {
   validateCoupon,
   redeemCoupon,
   createCoupon,
   listCoupons,
   updateCoupon,
+  deleteCoupon
 };

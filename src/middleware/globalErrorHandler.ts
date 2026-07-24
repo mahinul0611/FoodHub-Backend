@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Prisma } from "../../generated/prisma/client";
-import { ZodError } from "zod"; // 👈 ১. ZodError ইমপোর্ট করো
+import { ZodError } from "zod";
 
 function errorHandler(
   err: any,
@@ -12,14 +12,11 @@ function errorHandler(
   let errorMessage = "Internal Server Error";
   let errorDetails = err;
 
-  // 👇 ২. ZodError হ্যান্ডেল করার জন্য এই ব্লকটি যোগ করা হলো
+  // For ZodError:
   if (err instanceof ZodError) {
     statusCode = 400;
-    // জডের সবকটি ফিল্ডের স্পেসিফিক মেসেজ এক করে দেওয়া
-    errorMessage =
-      err.issues
-        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-        .join(". ") || "Validation Error";
+    // 👈 এখানে পাথ বাদ দিয়ে শুধুমাত্র মূল মেসেজটি নেওয়া হচ্ছে
+    errorMessage = err.issues[0]?.message || "Validation Error";
   }
 
   // For PrismaClientValidationError:
@@ -63,7 +60,6 @@ function errorHandler(
   res.status(statusCode);
   res.json({
     message: errorMessage,
-    error: errorDetails,
   });
 }
 

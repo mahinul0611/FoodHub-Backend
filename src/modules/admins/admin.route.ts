@@ -8,7 +8,7 @@ const router = express.Router();
 router.get("/users", auth(UserRole.ADMIN), adminController.getAllUsers);
 router.get("/orders", auth(UserRole.ADMIN), adminController.getAllOrders);
 router.get("/stats", auth(UserRole.ADMIN), adminController.getAdminStats);
-router.get("sessions", auth(UserRole.ADMIN), adminController.getLoginSessions);
+router.get("/sessions", auth(UserRole.ADMIN), adminController.getLoginSessions);
 router.get("/users/:userId", auth(UserRole.ADMIN), adminController.getUserById);
 router.put(
   "/users/:userId",

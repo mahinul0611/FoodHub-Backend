@@ -92,14 +92,15 @@ const updateCategory = async (req: Request, res: Response) => {
 
 
 const deleteCategory = async (req: Request, res: Response) => {
-  const categoryId = req.params.id;
-  if (typeof categoryId !== "string" || !categoryId) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Category id is required!" });
-  }
+
+  const {categoryId} = req.params;
+  // if (typeof categoryId !== "string" || !categoryId) {
+  //   return res
+  //     .status(400)
+  //     .json({ success: false, message: "Category id is required!" });
+  // }
   try {
-    const result = await categoryService.deleteCategory(categoryId);
+    const result = await categoryService.deleteCategory(categoryId as string);
     return res.status(200).json({ success: true, data: result });
   } catch (err) {
     return res.status(400).json({

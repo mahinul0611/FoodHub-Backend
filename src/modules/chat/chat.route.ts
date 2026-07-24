@@ -4,6 +4,6 @@ import { chatController } from "./chat.controller";
 
 const router = Router();
 
-router.post("/", chatController.handleChatMessage);
+router.post("/", chatController.handleChatmessages);
 
 export const ChatRoutes = router;

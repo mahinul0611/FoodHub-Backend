@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Prisma } from "../../generated/prisma/client";
+import { ZodError } from "zod"; // 👈 ১. ZodError ইমপোর্ট করো
 
 function errorHandler(
   err: any,
@@ -11,9 +12,18 @@ function errorHandler(
   let errorMessage = "Internal Server Error";
   let errorDetails = err;
 
-  // For PrismaClientValidationError:
+  // 👇 ২. ZodError হ্যান্ডেল করার জন্য এই ব্লকটি যোগ করা হলো
+  if (err instanceof ZodError) {
+    statusCode = 400;
+    // জডের সবকটি ফিল্ডের স্পেসিফিক মেসেজ এক করে দেওয়া
+    errorMessage =
+      err.issues
+        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+        .join(". ") || "Validation Error";
+  }
 
-  if (err instanceof Prisma.PrismaClientValidationError) {
+  // For PrismaClientValidationError:
+  else if (err instanceof Prisma.PrismaClientValidationError) {
     statusCode = 400;
     errorMessage = "Missing field or Incorrect field type";
   }
@@ -34,24 +44,20 @@ function errorHandler(
   }
 
   // For PrismaClientUnknownRequestError :
-
-  if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+  else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
     statusCode = 500;
     errorMessage = "An error occured during query execution ";
   }
 
   // For PrismaClientInitializationError:
-
-  if (err instanceof Prisma.PrismaClientInitializationError) {
+  else if (err instanceof Prisma.PrismaClientInitializationError) {
     if (err.errorCode === "P1000") {
       statusCode = 401;
       errorMessage = "Authentication Failed Please check your credentials";
-    }
-    else if (err.errorCode==="P1001"){
-        statusCode = 400;
+    } else if (err.errorCode === "P1001") {
+      statusCode = 400;
       errorMessage = "Cannot reach database server";
     }
-
   }
 
   res.status(statusCode);
@@ -59,7 +65,6 @@ function errorHandler(
     message: errorMessage,
     error: errorDetails,
   });
-  //   next()
 }
 
 export default errorHandler;

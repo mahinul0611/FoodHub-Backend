@@ -12,12 +12,10 @@ if (!apiKey) {
 const groq = new Groq({ apiKey });
 
 const generateChatResponseFromAI = async (
-  chatHistory: ChatMessage[],
+  chatHistory: ChatMessage[]
 ): Promise<string> => {
-  // ১. সেফটি চেক: chatHistory array না হলে খালি array নিবে
   const safeHistory = Array.isArray(chatHistory) ? chatHistory : [];
 
-  // ২. Prisma দিয়ে সচল খাবারগুলো ফেচ করা
   const availableMeals = await prisma.meals.findMany({
     where: {
       isDeleted: false,
@@ -35,24 +33,21 @@ const generateChatResponseFromAI = async (
     take: 25,
   });
 
-  // ৩. খাবারগুলোর ফরম্যাটিং
   const menuContext = availableMeals
     .map(
       (meal) =>
-        `- Item: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`,
+        `- Item: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`
     )
     .join("\n");
 
-  // ৪. চ্যাট হিস্ট্রি Groq-এর ফরম্যাটে কনভার্ট করা
   const formattedHistory = safeHistory.map((msg) => ({
     role: msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
     content: msg.text,
   }));
 
-  // ৫. Groq API Call (Tone Rules + Ordering Tools)
   const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
-    temperature: 0.5,
+    temperature: 0.3, // 👈 0.3 দিলে AI আরও বেশি রুল মেনে চলবে
     messages: [
       {
         role: "system",
@@ -63,7 +58,7 @@ const generateChatResponseFromAI = async (
 - Sound like a helpful support agent from Bangladesh.
 - Use bullet points and relevant emojis to make responses visually engaging.
 - Strictly adapt to what the user is asking and how they are writing. 
-- DO NOT give irrelevant or out-of-context answers (ultapalta answer korba na, ja jante chaiche shegular basis e exact answer korba).
+- DO NOT give irrelevant or out-of-context answers.
 
 --- 🧠 CONTEXT & MEMORY INSTRUCTIONS ---
 - Always maintain full conversation context using previous messages.
@@ -78,7 +73,11 @@ const generateChatResponseFromAI = async (
 2. IF ANY DETAIL IS MISSING WHEN USER WANTS TO ORDER:
    - DO NOT call the "confirmFoodOrder" tool yet.
    - Politely ask the user to provide the missing details (e.g., "Order confirm korte apnar phone number r delivery address-ta diben please?").
-3. ONLY call "confirmFoodOrder" tool AFTER collecting BOTH the phone number and delivery address.
+3. ONLY call "confirmFoodOrder" tool AFTER collecting ALL required details.
+
+--- 🛑 CRITICAL RULE TO PREVENT DUPLICATE ORDERS (MUST FOLLOW) ---
+- ONLY call "confirmFoodOrder" if the user's LATEST/MOST RECENT message is explicitly asking to place a NEW order or providing the requested phone/address.
+- IF THE ORDER HAS ALREADY BEEN CONFIRMED IN PREVIOUS MESSAGES: DO NOT CALL "confirmFoodOrder" AGAIN! Just answer the user's latest question normally (e.g. delivery time, general queries, thank you replies).
 
 --- 🍔 DATABASE MENU (ONLY SUGGEST FROM THIS) ---
 ${menuContext}
@@ -96,8 +95,7 @@ ${menuContext}
 
   const responseMessage = completion.choices[0]?.message;
 
-  // 🛠️ ৬. Tool Call প্রসেসিং (TypeScript safe optional chaining)
-  const toolCall = responseMessage?.tool_calls?.[0]; // 👈 Safe optional indexing
+  const toolCall = responseMessage?.tool_calls?.[0];
 
   if (toolCall) {
     const toolName = toolCall.function.name as keyof typeof toolHandlers;

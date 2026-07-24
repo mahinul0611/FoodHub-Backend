@@ -2,7 +2,7 @@ import { Coupon } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma"; // ⚠️ tomar onno service er prisma import path er sathe match koro
 
 
-export const DELIVERY_CHARGE = Number(process.env.DELIVERY_CHARGE ?? 60);
+export const DELIVERY_CHARGE = Number(process.env.DELIVERY_CHARGE ?? 0);
 
 const calcDiscount = (coupon: Coupon, subtotal: number) => {
   let discount =

@@ -15,8 +15,11 @@ export interface ChatMessage {
 }
 
 const generateChatResponseFromAI = async (
-  chatHistory: ChatMessage[] // 👈 এখন পুরো চ্যাট হিস্ট্রি রিসিভ করবে
+  chatHistory: ChatMessage[]
 ): Promise<string> => {
+  // ⚠️ Safety Check: chatHistory যদি undefined বা অ্যারে না হয়, তবে ক্র্যাশ না করে খালি অ্যারে নিবে
+  const safeHistory = Array.isArray(chatHistory) ? chatHistory : [];
+
   // ১. ডাটাবেজ থেকে খাবার ফেচ করা
   const availableMeals = await prisma.meals.findMany({
     select: {
@@ -39,8 +42,8 @@ const generateChatResponseFromAI = async (
     )
     .join("\n");
 
-  // ৩. ফ্রন্টএন্ড থেকে আসা মেসেজ হিস্ট্রিকে Groq-এর ফরম্যাটে কনভার্ট করা
-  const formattedHistory = chatHistory.map((msg) => ({
+  // ৩. সেফলি চ্যাট হিস্ট্রি ফরম্যাট করা
+  const formattedHistory = safeHistory.map((msg) => ({
     role: msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
     content: msg.text,
   }));
@@ -48,7 +51,7 @@ const generateChatResponseFromAI = async (
   // ৪. Groq Call
   const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
-    temperature: 0.5, // 👈 ০.৫ দিলে এআই হাবিজাবি কথা না বলে পয়েন্ট-টু-পয়েন্ট উত্তর দেবে
+    temperature: 0.5,
     messages: [
       {
         role: "system",
@@ -71,13 +74,13 @@ ${menuContext}
 2. If an item is unavailable, politely decline in Banglish and suggest menu alternatives.
 3. Keep answers clear, well-structured, and concise.`,
       },
-      ...formattedHistory, // 👈 আগের সব মেসেজ এবং নতুন মেসেজের পুরো মেমোরি পাঠাচ্ছে
+      ...formattedHistory,
     ],
   });
 
   return (
     completion.choices[0]?.message?.content ||
-    "Sorry,Your request could not be processed!."
+    "Sorry, Your request could not be processed!"
   );
 };
 

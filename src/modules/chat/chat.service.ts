@@ -9,8 +9,18 @@ if (!apiKey) {
 
 const groq = new Groq({ apiKey });
 
-const generateChatResponseFromAI = async (message: string): Promise<string> => {
-  // ১. Prisma দিয়ে ডাটাবেজ থেকে খাবার ফেচ করা
+export interface ChatMessage {
+  role: "user" | "assistant";
+  text: string;
+}
+
+const generateChatResponseFromAI = async (
+  chatHistory: ChatMessage[] // 👈 ১. এখানে single message-এর বদলে ChatMessage[] array রিসিভ করবে
+): Promise<string> => {
+  // ২. সেফটি চেক: chatHistory array না হলে খালি array নিবে
+  const safeHistory = Array.isArray(chatHistory) ? chatHistory : [];
+
+  // ৩. Prisma দিয়ে খাবার ফেচ করা
   const availableMeals = await prisma.meals.findMany({
     select: {
       name: true,
@@ -24,18 +34,24 @@ const generateChatResponseFromAI = async (message: string): Promise<string> => {
     take: 20,
   });
 
-  // ২. ডাটাবেজের ডেটাকে ফরমেট করা
+  // ৪. খাবারগুলোর ফরমেটিং
   const menuContext = availableMeals
     .map(
       (meal) =>
-        `- Item: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`,
+        `- Item: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`
     )
     .join("\n");
 
-  // ৩. Groq এপিআই কল (Few-Shot Prompting & Temperature Adjustment)
+  // ৫. ফ্রন্টএন্ড থেকে আসা মেসেজ হিস্ট্রিকে Groq-এর ফরম্যাটে কনভার্ট করা
+  const formattedHistory = safeHistory.map((msg) => ({
+    role: msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
+    content: msg.text,
+  }));
+
+  // ৬. Groq API Call
   const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
-    temperature: 0.6, // 👈 0.6 দিলে রেসপন্স অনেক নিখুঁত, টু-দ্য-পয়েন্ট ও সুন্দর হয়
+    temperature: 0.5,
     messages: [
       {
         role: "system",
@@ -46,29 +62,19 @@ const generateChatResponseFromAI = async (message: string): Promise<string> => {
 - Sound like a real young support agent from Dhaka/Bangladesh (use words like "Ji!", "Apnar jonno", "Khabar-ta khub-i moja", "Order kore nin").
 - Use bullet points and relevant emojis to make responses visually engaging.
 
+--- 🧠 CONTEXT & MEMORY INSTRUCTIONS ---
+- Always maintain full conversation context using previous messages.
+- DO NOT repeat yourself or send identical sentences.
+
 --- 🍔 DATABASE MENU (ONLY SUGGEST FROM THIS) ---
 ${menuContext}
-
---- 💬 EXAMPLES OF HOW YOU MUST ANSWER ---
-
-User: "kono biryani ache?"
-Assistant: "Ji, amader kache biryani ache! 🍗\n\n- **Kacchi Biryani** (Kacchi Category) - 350 BDT\n\nTry kore দেখতে paren, khub-i popular item!"
-
-User: "100 takar moddhe ki pabo?"
-Assistant: "100 BDT-er moddhe amader kache eigula ache: 😋\n\n- **Dim Polao** - 60 BDT\n- **Ice Cream** - 100 BDT\n\nKonta order korben janan!"
-
-User: "pizza ache?"
-Assistant: "Dukhito! Amader menu-te ekhon Pizza available nei. 😔 Tobe apni amader **Egg Fried Rice** (120 BDT) ba **Grill Chicken** (110 BDT) try করতে paren!"
 
 --- 📌 CRITICAL INSTRUCTIONS ---
 1. STRICTLY NEVER recommend any food item that is NOT present in the DATABASE MENU above.
 2. If the asked item is unavailable, politely decline in Banglish and suggest an item from the menu.
 3. Keep replies short, accurate, and structured.`,
       },
-      {
-        role: "user",
-        content: message,
-      },
+      ...formattedHistory, // 👈 ৭. পুরো চ্যাট হিস্ট্রি এআই-কে পাস করা হচ্ছে
     ],
   });
 

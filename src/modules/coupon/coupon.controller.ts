@@ -40,14 +40,14 @@ const list = async (_req: Request, res: Response) => {
 };
 
 const update = async (req: Request, res: Response) => {
-  const couponId = req.params.id;
-  if (typeof couponId !== "string" || !couponId) {
+  const id = req.params.id;
+  if (typeof id !== "string" || !id) {
     return res
       .status(400)
       .json({ success: false, message: "Coupon id is required!" });
   }
   try {
-    const coupon = await couponService.updateCoupon(couponId, {
+    const coupon = await couponService.updateCoupon(id, {
       active: req.body?.active,
     });
     return res.status(200).json({ success: true, data: coupon });
@@ -60,14 +60,14 @@ const update = async (req: Request, res: Response) => {
 };
 
 const deleteCoupon = async (req: Request, res: Response) => {
-  const couponId = req.params.id;
-  if (typeof couponId !== "string" || !couponId) {
+  const id = req.params.id;
+  if (typeof id !== "string" || !id) {
     return res
       .status(400)
       .json({ success: false, message: "Coupon id is required!" });
   }
   try {
-    const coupon = await couponService.deleteCoupon(couponId);
+    const coupon = await couponService.deleteCoupon(id);
     return res.status(200).json({ success: true, data: coupon });
   } catch (err) {
     return res.status(400).json({

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { categoryService } from "./category.service";
 import { UserRole } from "../../lib/auth";
+import { categoryService } from "./category.service";
 
 const createCategory = async (req: Request, res: Response) => {
   try {

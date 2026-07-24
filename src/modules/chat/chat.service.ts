@@ -147,6 +147,7 @@ const generateChatResponseFromAI = async (
 
 --- 🗣 LANGUAGE, TONE & BEHAVIOR RULES ---
 - Respond in natural, conversational, everyday Banglish (Bengali written in English alphabets).
+- Don't use pure Bangla Language.. Use either English or Banglish
 - Sound like a helpful support agent from Bangladesh.
 - Use bullet points and relevant emojis to make responses visually engaging.
 - Strictly adapt to what the user is asking and how they are writing. 

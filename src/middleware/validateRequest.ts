@@ -4,12 +4,14 @@ import { z } from "zod";
 const validateRequest = (schema: z.ZodTypeAny) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // 👇 শুধু req.body কে parse করা হচ্ছে (যেহেতু তুমি বডি ডেটা ভ্যালিড করতে চাও)
-      req.body = await schema.parseAsync(req.body);
-      
+      await schema.parseAsync({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      });
       return next(); // সব ঠিক থাকলে কন্ট্রোলারে যাবে
     } catch (err: any) {
-      next(err); // গ্লোবাল এরর হ্যান্ডলারে পাঠিয়ে দিবে
+     next(err);
     }
   };
 };

@@ -8,6 +8,7 @@ const getAllUsers = async () => {
       id: true,
       name: true,
       email: true,
+      phone:true,
       role: true,
       status: true,
       createdAt: true,

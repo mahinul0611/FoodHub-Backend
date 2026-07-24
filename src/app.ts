@@ -17,6 +17,7 @@ import { phoneRoutes } from "./modules/phone/phone.route";
 import { complaintRoutes } from "./modules/complaint/complaint.route";
 import { paymentRoutes } from "./modules/payment/payment.route";
 import { couponRoutes } from "./modules/coupon/coupon.route";
+import { ChatRoutes } from "./modules/chat/chat.route";
 
 const app: Application = express();
 
@@ -31,6 +32,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // SSLCommerz form-data pathay — eta MUST (already thakle skip)
 app.use("/payments", paymentRoutes);
 app.use("/coupons", couponRoutes);
+app.use("/api/chat", ChatRoutes);
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {

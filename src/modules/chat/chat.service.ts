@@ -1,6 +1,10 @@
 import Groq from "groq-sdk";
 import { prisma } from "../../lib/prisma";
-import { ChatMessage } from "./chat.types";
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  text: string;
+}
 
 const apiKey = process.env.GROQ_API_KEY;
 
@@ -10,107 +14,15 @@ if (!apiKey) {
 
 const groq = new Groq({ apiKey });
 
-// 🛠️ টাইপ-সেফ #ORDER ফরম্যাট পার্সিং
-const parseOrderFormat = (text: string) => {
-  const itemMatch = text.match(/Item:\s*(.+)/i);
-  const qtyMatch = text.match(/Quantity:\s*(\d+)/i);
-  const phoneMatch = text.match(/Phone:\s*(01[3-9]\d{8})/i);
-  const addressMatch = text.match(/Address:\s*(.+)/i);
-
-  // 👈 Safe optional chaining দিয়ে undefined এরর আটকানো হয়েছে
-  const itemName = itemMatch?.[1]?.trim();
-  const quantityStr = qtyMatch?.[1]?.trim();
-  const phoneNumber = phoneMatch?.[1]?.trim();
-  const address = addressMatch?.[1]?.trim();
-
-  if (itemName && quantityStr && phoneNumber && address) {
-    return {
-      itemName,
-      quantity: parseInt(quantityStr, 10),
-      phoneNumber,
-      address,
-    };
-  }
-  return null;
-};
-
 const generateChatResponseFromAI = async (
   chatHistory: ChatMessage[],
-  userId?: string
 ): Promise<string> => {
   const safeHistory = Array.isArray(chatHistory) ? chatHistory : [];
-  
-  // 👈 টাইপ-সেফ অ্যারে ইনডেক্সিং
-  const lastMsg = safeHistory.length > 0 ? safeHistory[safeHistory.length - 1] : undefined;
-  const latestUserMessage = lastMsg?.text || "";
 
-  // 🛑 ১. #ORDER ফরম্যাট প্রসেসিং
-  if (latestUserMessage.startsWith("#ORDER")) {
-    if (!userId) {
-      return "Dukhito! Order place korar jonno apnake prothome account-e Log In korte hobe. Kindly Login kare abar try korun! 🔐";
-    }
-
-    const orderData = parseOrderFormat(latestUserMessage);
-
-    if (!orderData) {
-      return `❌ Apnar order format-ti thik nei! Kindly ei format-e likhun:\n\n#ORDER\nItem: [Food Name]\nQuantity: [Number]\nPhone: [01XXXXXXXXX]\nAddress: [Full Address]`;
-    }
-
-    try {
-      const meal = await prisma.meals.findFirst({
-        where: {
-          name: { contains: orderData.itemName, mode: "insensitive" },
-          isDeleted: false,
-          status: "AVAILABLE",
-        },
-      });
-
-      if (!meal) {
-        return `Dukhito! "${orderData.itemName}" নামে কোনো খাবার বর্তমানে পাওয়া যাচ্ছে না।`;
-      }
-
-      const loggedInUser = await prisma.user.findUnique({
-        where: { id: userId },
-      });
-
-      if (!loggedInUser) {
-        return "Apnar user account-ti paowa jayni. Kindly re-login kore try korun.";
-      }
-
-      const totalAmount = Number(meal.price) * orderData.quantity;
-
-      const newOrder = await prisma.orders.create({
-        data: {
-          userId: loggedInUser.id,
-          providerId: meal.providerId,
-          totalPrice: totalAmount,
-          address: orderData.address,
-          contactNumber: orderData.phoneNumber,
-          status: "PLACED",
-          paymentMethod: "COD",
-          paymentStatus: "UNPAID",
-          orderItems: {
-            create: [
-              {
-                mealsId: meal.id,
-                price: meal.price,
-                quantity: orderData.quantity,
-              },
-            ],
-          },
-        },
-      });
-
-      return `Apanar order-ti successfully confirm hoye geche! 🎉\n\n📦 **Order Summary:**\n- **Item:** ${meal.name}\n- **Quantity:** ${orderData.quantity}\n- **Phone:** ${orderData.phoneNumber}\n- **Address:** ${orderData.address}\n- **Total Bill:** ${totalAmount} BDT\n- **Order ID:** #${newOrder.id}\n\nAmader delivery agent khub shighro apnar sathe jogajog korbe! Thank you! 😊`;
-    } catch (error) {
-      console.error("Order DB Error:", error);
-      return "Dukhito, order-ti process kora jacche na.";
-    }
-  }
-
-  // ⚡ ২. টোকেন বাঁচানোর জন্য চ্যাট হিস্ট্রি ফিল্টারিং
+  // ⚡ ১. চ্যাট হিস্ট্রির শেষের ৬টি মেসেজ রাখা (টোকেন সাশ্রয়ের জন্য)
   const recentHistory = safeHistory.slice(-6);
 
+  // 🍔 ২. ডাটাবেজ থেকে এভেলেবল খাবারের মেনু নিয়ে আসা
   const availableMeals = await prisma.meals.findMany({
     where: {
       isDeleted: false,
@@ -121,13 +33,14 @@ const generateChatResponseFromAI = async (
       price: true,
       category: { select: { name: true } },
     },
-    take: 15,
+    take: 20,
   });
 
+  // মেনু ফরম্যাটিং
   const menuContext = availableMeals
     .map(
       (meal) =>
-        `- Item: ${meal.name} | Category: ${meal.category?.name || "General"} | Price: ${meal.price} BDT`
+        `- ${meal.name} (${meal.category?.name || "General"}): ${meal.price} BDT`,
     )
     .join("\n");
 
@@ -137,60 +50,71 @@ const generateChatResponseFromAI = async (
   }));
 
   try {
+    // 🚀 ৩. AI Completion Request
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
-      temperature: 0.4,
+      temperature: 0.6, // 🔥 ফ্লুয়েন্ট ও ন্যাচারাল কথা বলার জন্য
       messages: [
         {
           role: "system",
-          content: `You are "FoodHub Assistant", a lively, friendly, and smart AI customer support agent for FoodHub Bangladesh.
+          content: `You are "FoodHub Assistant", a lively, warm, cheerful, and super smart AI customer support agent for FoodHub Bangladesh.
 
---- 🗣 LANGUAGE, TONE & BEHAVIOR RULES ---
-- Respond in natural, conversational, everyday Banglish (Bengali written in English alphabets).
-- Sound like a helpful support agent from Bangladesh.
-- Use bullet points and relevant emojis to make responses visually engaging.
-- Strictly adapt to what the user is asking and how they are writing. 
-- DO NOT give irrelevant or out-of-context answers.
+--- 🗣️ FLUENT BANGLISH STYLE GUIDE ---
+- Speak natural, everyday conversational Banglish as used by young urban Bangladeshis.
+- Use friendly words like: "Ji definitely!", "Kemon achen?", "Khub-i joss", "Pura jompesh", "Ajke ki mood?", "Aro kichu lagbe?".
+- Keep responses engaging, warm, formatted with bullet points, and helpful with emojis.
 
---- 🧠 CONTEXT & MEMORY INSTRUCTIONS ---
-- Always maintain full conversation context using previous messages.
-- DO NOT repeat yourself or send identical sentences.
+--- 💡 REAL-LIFE CONVERSATION EXAMPLES (FOLLOW THIS STYLE STRICTLY) ---
 
---- 📌 CRITICAL INSTRUCTIONS ---
-1. STRICTLY NEVER recommend any food item that is NOT present in the DATABASE MENU above.
-2. If the asked item is unavailable, politely decline in Banglish and suggest an item from the menu.
-3. Keep replies short, accurate, structured, and helpful.
+Example 1 (Greeting):
+User: "Hello" / "Hi"
+Assistant: "Hey there! 👋 Welcome to FoodHub! Kemon achen? Ajke lunch naki dinner-er jonno ki khaete mon chacche bolun তো? 😊"
 
+Example 2 (Food Recommendation):
+User: "Khub khida paise, valo kichu suggest koro"
+Assistant: "Khida pele toh kono kotha-i hobe na! 🔥 Heavy kichu khete chaile amader **Kacchi Biryani** ba **Beef Tehari** try korte paren. R jodi halka kichu chan, toh **Grill Chicken** r **Nān** ekdom perfect hobe! Kon-ta dibo bolun? 😉"
 
---- 🛒 MANDATORY ORDERING RULES ---
-1. You CANNOT place orders directly by yourself.
-2. ONLY LOGGED-IN USERS can order food.
-3. If a user asks to order food, guide them to copy and send this EXACT format:
+Example 3 (Price Inquiry):
+User: "Kacchi er dam koto?"
+Assistant: "Amader shadh-er **Kacchi Biryani**-r dam porbe ekdom **350 BDT**! 🍛 Sathe ek glass thanda **Borhani** hole toh pura jompesh hobe! Add korbo নাকি?"
 
-#ORDER
-Item: [Exact Food Name]
-Quantity: [Number]
-Phone: [01XXXXXXXXX]
-Address: [Full Delivery Address]
+Example 4 (Unavailable Item):
+User: "Pizza ache?"
+Assistant: "Aah, dukhito bro! 😅 Ajke amader Pizza-ta stock-e nei. Tobu khida nosto korar dorkar nei, amader **Beef Burger** r **Crispy Chicken** kintu top-notch! Try kore dekhben?"
 
---- 🍔 DATABASE MENU ---
+Example 5 (How to Order):
+User: "Kivabe order korbo?"
+Assistant: "Order kora ekdom simple r fatai! 🚀 
+1. Apnar pochonder খাবার-টি cart-e add korun.
+2. Direct Checkout-e giye apnar Address r Phone number din.
+3. Delivery-te cash pay korun! 
+Kono jhamela chharai khabar pouche jabe apnar dorjay! 📦✨"
+
+--- 🍔 DATABASE MENU (ONLY SUGGEST FROM THIS) ---
 ${menuContext}
 
 --- 📌 CRITICAL INSTRUCTIONS ---
-1. STRICTLY NEVER recommend any food item that is NOT present in the DATABASE MENU above.
-2. Keep replies short, accurate, structured, and helpful.`,
+1. STRICTLY NEVER recommend foods NOT in the DATABASE MENU above.
+2. NEVER place orders directly. Just guide users warmly.
+3. Keep answers concise, vibrant, and conversational.`,
+
+
         },
         ...formattedHistory,
       ],
     });
 
     const choice = completion.choices?.[0];
-    return choice?.message?.content || "Sorry, I can't process your request right now.";
+    return (
+      choice?.message?.content ||
+      "Apnake sahajjo korte pere khusi holam! Aro kichu janar thakle bolun. 😊"
+    );
   } catch (error: any) {
+    console.error("Chat AI Error:", error);
     if (error?.status === 429 || error?.message?.includes("429")) {
-      return "Amader AI server-e ektu bhir besi. Kindly 2-3 minute por abar try korun! 🙏";
+      return "Amader AI server-e ektu bhir besi. Kindly 1-2 minute por abar ektu try korun! 🙏";
     }
-    throw error;
+    return "Dukhito, ektu technical problem hocche. Apnar prosno-ta abar bolben kindly?";
   }
 };
 

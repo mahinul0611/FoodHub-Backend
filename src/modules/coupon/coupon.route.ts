@@ -10,4 +10,10 @@ router.get("/", auth(UserRole.ADMIN), couponController.list);
 router.post("/", auth(UserRole.ADMIN), couponController.create);
 router.patch("/:id", auth(UserRole.ADMIN), couponController.update);
 
+router.delete(
+  "/:couponId",
+  auth(UserRole.ADMIN),
+  couponController.deleteCoupon
+);
+
 export const couponRoutes = router;

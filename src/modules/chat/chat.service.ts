@@ -53,7 +53,7 @@ const generateChatResponseFromAI = async (
     // 🚀 ৩. AI Completion Request
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
-      temperature: 0.6, // 🔥 ফ্লুয়েন্ট ও ন্যাচারাল কথা বলার জন্য
+      temperature: 0.3, // 🔥 ফ্লুয়েন্ট ও ন্যাচারাল কথা বলার জন্য
       messages: [
         {
           role: "system",

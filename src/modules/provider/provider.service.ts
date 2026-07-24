@@ -48,6 +48,28 @@ const getProviderOrder = async (providerId: string) => {
 };
 
 const updateOrderStatus = async (orderId: string, status: OrdersStatus) => {
+
+
+  // ১. প্রথমে ডাটাবেজ থেকে অর্ডারটি খুঁজে বের করো
+  const existingOrder = await prisma.orders.findUnique({
+    where: { id: orderId },
+  });
+
+  if (!existingOrder) {
+    throw new Error("Order not found!");
+  }
+
+  // ২. চেক করো অর্ডারটি ইতিমধ্যেই DELIVERED বা CANCELLED কি না
+  if (
+    existingOrder.status === "DELIVERED" ||
+    existingOrder.status === "CANCELLED"
+  ) {
+    throw new Error(
+      `Cannot update status. Order is already ${existingOrder.status.toLowerCase()}.`
+    );
+  }
+
+
   const result = await prisma.orders.update({
     where: {
       id: orderId,

@@ -27,35 +27,25 @@ const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
-const getUserById = async (req:Request,res:Response) => {
-  
-
+const getUserById = async (req: Request, res: Response) => {
   try {
-    
-
-    const {userId}= req.params
-
+    const { userId } = req.params;
 
     const result = await adminService.getUserById(userId as string);
 
     res.status(200).json({
-      success:true,
-      message:"User data fetched successfully",
-      data:result
-    })
-
-  } catch (error:any) {
-    
+      success: true,
+      message: "User data fetched successfully",
+      data: result,
+    });
+  } catch (error: any) {
     res.status(404).json({
-      success:false,
-      message:"User data fetching failed",
-      error: error.message
-    })
-
-
+      success: false,
+      message: "User data fetching failed",
+      error: error.message,
+    });
   }
 };
-
 
 const updateUserStatus = async (req: Request, res: Response) => {
   try {
@@ -114,16 +104,14 @@ const getAdminStats = async (req: Request, res: Response) => {
   }
 };
 
- const getAllOrders = async (req: Request, res: Response) => {
+const getAllOrders = async (req: Request, res: Response) => {
   try {
-   
+    const user = req.user;
 
-    const user= req.user
-
-    if(user?.role!== UserRole.ADMIN){
-      throw new Error("Unauthorized!")
+    if (user?.role !== UserRole.ADMIN) {
+      throw new Error("Unauthorized!");
     }
-    
+
     const result = await adminService.getAllOrders();
 
     res.status(200).json({
@@ -139,16 +127,13 @@ const getAdminStats = async (req: Request, res: Response) => {
   }
 };
 
-
 const removeProvider = async (req: Request, res: Response) => {
   try {
-
     console.log("REQ PARAMS:", req.params);
     const { providerId } = req.params; // Provider er User ID
-    
 
     const result = await adminService.removeProvider(providerId as string);
-    
+
     return res.status(200).json({
       success: true,
       message: result.message,
@@ -162,6 +147,24 @@ const removeProvider = async (req: Request, res: Response) => {
   }
 };
 
+const getLoginSessions = async (req: Request, res: Response) => {
+  try {
+    // Service theke data niye asha
+    const sessions = await adminService.getLoginSessions();
+
+    // Success response pathano
+    return res.status(200).json({
+      success: true,
+      data: sessions,
+    });
+  } catch (error: any) {
+    // Error handle kora
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch login sessions",
+    });
+  }
+};
 
 export const adminController = {
   getAllUsers,
@@ -170,4 +173,5 @@ export const adminController = {
   getAdminStats,
   updateUserStatus,
   removeProvider,
+  getLoginSessions,
 };

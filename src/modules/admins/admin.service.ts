@@ -133,9 +133,9 @@ const getAllOrders = async () => {
 };
 
 
-const removeProvider = async (providerUserId: string) => {
+const removeProvider = async (providerId: string) => {
   const provider = await prisma.providersProfile.findUnique({
-    where: { userId: providerUserId },
+    where: { userId: providerId },
   });
 
   if (!provider) {
@@ -145,7 +145,7 @@ const removeProvider = async (providerUserId: string) => {
   await prisma.$transaction(async (tx) => {
     // 1. User table e hide kora
     await tx.user.update({
-      where: { id: providerUserId },
+      where: { id: providerId },
       data: { isDeleted: true },
     });
 
@@ -166,6 +166,30 @@ const removeProvider = async (providerUserId: string) => {
 };
 
 
+
+const getLoginSessions = async () => {
+  // Session table theke latest 50 ta login history fetch kora hocche
+  const sessions = await prisma.session.findMany({
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true, // Tomar User table-e jodi role field thake
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc", // BetterAuth-e createdAt na thakle 'expiresAt' use korbe
+    },
+    take: 50, // Limit kore dilam jate query fast hoy
+  });
+
+  return sessions;
+};
+
+
 export const adminService = {
   getAllUsers,
   getAllOrders,
@@ -173,4 +197,5 @@ export const adminService = {
   getAdminStats,
   updateUserStatus,
   removeProvider,
+  getLoginSessions,
 };

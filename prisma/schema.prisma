@@ -206,6 +206,7 @@ model User {
   sessions         Session[]
   orders           Orders[]
   reviews          Reviews[]
+  loginHistories LoginHistory[]
   isDeleted Boolean @default(false)
 
   @@map("user")
@@ -254,6 +255,21 @@ model Verification {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+
+
+
+
   @@index([identifier])
   @@map("verification")
+}
+
+
+
+model LoginHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress String?  
+  device    String?  
+  loginAt   DateTime @default(now())
 }

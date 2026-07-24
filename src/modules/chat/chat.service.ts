@@ -1,5 +1,5 @@
 import Groq from "groq-sdk";
-import prisma from "../shared/prisma"; // 👈 তোমার প্রজেক্টের prisma instance
+import { prisma } from "../../lib/prisma";
 
 const apiKey = process.env.GROQ_API_KEY;
 
@@ -13,7 +13,7 @@ const generateChatResponseFromAI = async (
   message: string,
 ): Promise<string> => {
   // ১. Prisma দিয়ে ডাটাবেজ থেকে খাবার ফেচ করা
-  const availableMeals = await prisma.meal.findMany({
+  const availableMeals = await prisma.meals.findMany({
     select: {
       name: true,
       price: true,

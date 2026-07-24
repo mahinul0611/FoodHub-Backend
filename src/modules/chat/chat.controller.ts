@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { generateChatResponseFromAI } from "./chat.service";
+import { chatService } from "./chat.service";
 
  const handleChatMessage = async (req: Request, res: Response) => {
   try {
@@ -10,7 +10,7 @@ import { generateChatResponseFromAI } from "./chat.service";
     }
 
     // সার্ভিস থেকে এআই রেসপন্স নিয়ে আসা
-    const reply = await generateChatResponseFromAI(message);
+    const reply = await chatService.generateChatResponseFromAI(message);
 
     return res.status(200).json({
       success: true,

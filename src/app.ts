@@ -32,7 +32,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // SSLCommerz form-data pathay — eta MUST (already thakle skip)
 app.use("/payments", paymentRoutes);
 app.use("/coupons", couponRoutes);
-app.use("/api/chat", ChatRoutes);
+app.use("/chat", ChatRoutes);
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {

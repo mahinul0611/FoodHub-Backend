@@ -9,7 +9,7 @@ if (!apiKey) {
 const ai = new GoogleGenAI({
   apiKey, // 👈 এখন TypeScript নিশ্চিত যে এটি একটি string
 });
-export const generateChatResponseFromAI = async (
+ const generateChatResponseFromAI = async (
   message: string,
 ): Promise<string> => {
   const response = await ai.models.generateContent({
@@ -23,3 +23,7 @@ export const generateChatResponseFromAI = async (
 
   return response.text || "Sorry, I couldn't process that.";
 };
+
+export const chatService ={
+generateChatResponseFromAI
+}

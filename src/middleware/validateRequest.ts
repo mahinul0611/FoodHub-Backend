@@ -11,11 +11,7 @@ const validateRequest = (schema: z.ZodTypeAny) => {
       });
       return next(); // সব ঠিক থাকলে কন্ট্রোলারে যাবে
     } catch (err: any) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation Error",
-        errors: err.errors,
-      });
+     next(err);
     }
   };
 };

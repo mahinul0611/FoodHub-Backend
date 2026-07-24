@@ -5,7 +5,7 @@ const handleChatMessage = async (req: Request, res: Response) => {
   try {
     const { messages } = req.body;
 
-    if (!messages) {
+    if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ message: "Message is required" });
     }
 

@@ -47,7 +47,7 @@ const generateChatResponseFromAI = async (
 
   const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
-    temperature: 0.3, // 👈 0.3 দিলে AI আরও বেশি রুল মেনে চলবে
+    temperature: 0.1, // 👈 0.3 দিলে AI আরও বেশি রুল মেনে চলবে
     messages: [
       {
         role: "system",

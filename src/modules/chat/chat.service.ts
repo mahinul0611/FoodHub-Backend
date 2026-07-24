@@ -21,7 +21,7 @@ const ai = new GoogleGenAI({
     },
   });
 
-  return response.text || "Sorry, I couldn't process that.";
+  return response.text || "Sorry, I couldn't process GEMINI MODEL";
 };
 
 export const chatService ={

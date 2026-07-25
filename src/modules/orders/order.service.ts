@@ -1,16 +1,9 @@
 import { prisma } from "../../lib/prisma";
-
 import { couponService, DELIVERY_CHARGE } from "../coupon/coupon.service";
-
+import { emailService } from "../email/email.service"; // 👈 ইমেইল সার্ভিস ইমপোর্ট করা হলো
 
 const createOrder = async (userId: string, data: any) => {
-
-
-  
-  // console.log("🔥 Order Data Received:", data);
-  // console.log("🔥 Coupon Code:", data.couponCode);
-
-  return await prisma.$transaction(
+  const order = await prisma.$transaction(
     async (tx) => {
       const mealIds = data.items.map((i: any) => i.mealsId);
       const meals = await tx.meals.findMany({
@@ -47,7 +40,7 @@ const createOrder = async (userId: string, data: any) => {
 
       const totalPrice = Math.max(0, total + DELIVERY_CHARGE - discount);
 
-      const order = await tx.orders.create({
+      const createdOrder = await tx.orders.create({
         data: {
           userId,
           address: data.address,
@@ -72,21 +65,41 @@ const createOrder = async (userId: string, data: any) => {
         });
       }
 
-      return order;
+      return createdOrder;
     },
     {
       timeout: 20000,
     }
   );
+
+  // 🚀 ট্রানজেকশন শেষ হওয়ার পর ব্যাকগ্রাউন্ডে অর্ডার কনফার্মেশন মেইল পাঠানো
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true },
+    });
+
+    if (user?.email) {
+      emailService
+        .sendOrderConfirmation(
+          user.email,
+          user.name || "Customer",
+          order.id,
+          Number(order.totalPrice)
+        )
+        .catch((err) => console.error("Background Order Email Error:", err));
+    }
+  } catch (emailErr) {
+    console.error("Failed to trigger order confirmation email:", emailErr);
+  }
+
+  return order;
 };
 
-
-const getMyOrders= async (userId:string)=>{
-
-
+const getMyOrders = async (userId: string) => {
   const result = await prisma.orders.findMany({
-   where: {
-      userId: userId, 
+    where: {
+      userId: userId,
     },
     include: {
       orderItems: {
@@ -96,20 +109,18 @@ const getMyOrders= async (userId:string)=>{
               name: true,
               price: true,
               description: true,
-            }
-          }
-        }
-      }
+            },
+          },
+        },
+      },
     },
     orderBy: {
-      createdAt: "desc"
-    }
-  })
+      createdAt: "desc",
+    },
+  });
 
-
-  return result
-
-}
+  return result;
+};
 
 const cancelMyOrder = async (userId: string, orderId: string) => {
   const order = await prisma.orders.findUnique({ where: { id: orderId } });
@@ -125,7 +136,6 @@ const cancelMyOrder = async (userId: string, orderId: string) => {
     where: { id: orderId },
     data: {
       status: "CANCELLED",
-      // Paid order hole paymentStatus PAID e thakbe (refund manually handle hobe)
       ...(order.paymentStatus === "PAID"
         ? {}
         : { paymentStatus: "CANCELLED" }),
@@ -133,9 +143,36 @@ const cancelMyOrder = async (userId: string, orderId: string) => {
   });
 };
 
+// 🆕 অর্ডার স্ট্যাটাস আপডেট করার সার্ভিস (যেমন DELIVERED হলে মেইল যাবে)
+// orderService এর ভিতরে updateOrderStatus ফাংশনটি এভাবে ঠিক করুন:
+const updateOrderStatus = async (orderId: string, status: any) => { // 👈 status-কে any বা প্রিজমা এনুম টাইপ দিন
+  const updatedOrder = await prisma.orders.update({
+    where: { id: orderId },
+    data: { status }, // এখানে টাইপ এরর দিবে না
+    include: {
+      user: {
+        select: { email: true, name: true },
+      },
+    },
+  });
+
+  if (updatedOrder?.user?.email) {
+    emailService
+      .sendOrderStatus(
+        updatedOrder.user.email,
+        updatedOrder.user.name || "Customer",
+        updatedOrder.id,
+        updatedOrder.status
+      )
+      .catch((err) => console.error("Background Status Email Error:", err));
+  }
+
+  return updatedOrder;
+};
 
 export const orderService = {
   createOrder,
   getMyOrders,
-  cancelMyOrder
+  cancelMyOrder,
+  updateOrderStatus, // 👈 এক্সপোর্ট করা হলো
 };

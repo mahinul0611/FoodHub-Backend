@@ -12,5 +12,6 @@ router.get("/", auth(UserRole.USER), orderController.getMyOrders);
 router.post("/", auth(UserRole.USER), validateRequest(createOrderSchema),orderController.createOrder);
 
 router.patch("/:id/cancel", auth(UserRole.USER), orderController.cancelMyOrder);
+router.patch("/:id/status", auth(UserRole.ADMIN, UserRole.PROVIDER), orderController.updateOrderStatus);
 
 export const orderRouter = router;

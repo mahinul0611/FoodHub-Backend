@@ -91,10 +91,34 @@ const cancelMyOrder = async (req: Request, res: Response) => {
   }
 };
 
+const updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const orderId = req.params.id;
+    const { status } = req.body; // যেমন: "DELIVERED", "PREPARING" ইত্যাদি
 
+    if (!orderId || !status) {
+      return res.status(400).json({ success: false, message: "Order ID and status are required!" });
+    }
+
+    const updatedOrder = await orderService.updateOrderStatus(orderId as string, status);
+
+    return res.status(200).json({
+      success: true,
+      message: "Order status updated and notification sent successfully",
+      data: updatedOrder,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: "Failed to update order status",
+      error: error.message,
+    });
+  }
+};
 
 export const orderController = {
   createOrder,
   getMyOrders,
-  cancelMyOrder
+  cancelMyOrder,
+  updateOrderStatus
 };

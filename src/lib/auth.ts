@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { APIError } from "better-auth/api";
 import nodemailer from "nodemailer";
+import { emailController } from "../modules/email/email.controller";
 
 export enum UserRole {
   USER = "USER",
@@ -109,6 +110,8 @@ export const auth = betterAuth({
                   email: user.email,
                 },
               });
+
+
               console.log("✅ Profile created successfully!");
             }
           } catch (error) {

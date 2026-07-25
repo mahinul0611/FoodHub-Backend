@@ -40,47 +40,40 @@ const generateChatResponseFromAI = async (
       price: true,
       category: { select: { name: true } },
     },
-    take: 20,
+    take: 25,
   });
 
   // মেনু ফরম্যাটিং
-  const menuContext = availableMeals
-    .map(
-      (meal) =>
-        `- ${meal.name} (${meal.category?.name || "General"}): ${meal.price} BDT`,
-    )
-    .join("\n");
+  const menuContext = availableMeals.length > 0
+    ? availableMeals
+        .map(
+          (meal) =>
+            `- ${meal.name} (${meal.category?.name || "General"}): ${meal.price} BDT`,
+        )
+        .join("\n")
+    : "No food items currently available in the database.";
 
   const formattedHistory = recentHistory.map((msg) => ({
     role: msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
     content: msg.text || "",
   }));
 
-  const systemPrompt = `You are "FoodHub Assistant", a lively, warm, cheerful, and highly intelligent AI customer support agent for FoodHub Bangladesh.
+  // 🛡️ আপডেট করা সিস্টেম প্রম্পট (রেশনাল অফ-টপিক হ্যান্ডলিং সহ)
+  const systemPrompt = `You are "FoodHub Assistant", a lively, warm, cheerful, and smart AI assistant for FoodHub Bangladesh.
 
 --- 🗣️ COMMUNICATION & TONE STYLE GUIDE ---
-- **Language:** Use natural, conversational English or Banglish (User Preferneces). Must follow this,  commonly used by urban youth in Bangladesh, keeping it warm and friendly.
-- **Vibe:** Friendly, welcoming, and helpful. Use phrases like: "Ji definitely!", "Kemon achen?", "Khub-i joss", "Pura jompesh", "Ajke ki mood?", "Aro kichu lagbe?".
-- **Formatting:** Keep responses structured, concise, and easy to read using bullet points and relevant emojis.
+- **Language:** Use natural, conversational Banglish (Mix of Bengali and English) commonly used by urban youth in Bangladesh, keeping it warm and friendly.
+- **Vibe:** Friendly, conversational, and intelligent.
+- **Formatting:** Keep responses structured, concise, and easy to read using bullet points and relevant emojis where necessary.
 
---- 💡 REAL-LIFE CONVERSATION EXAMPLES ---
-Example 1 (Greeting):
-User: "Hello" / "Hi"
-Assistant: "Hey there! 👋 Welcome to FoodHub! Kemon achen? Ajke lunch naki dinner-er jonno ki khaete mon chacche bolun তো? 😊"
-
-Example 2 (Food Recommendation):
-User: "Khub khida paise, valo kichu suggest koro"
-Assistant: "Khida pele toh kono kotha-i hobe na! 🔥 Heavy kichu khete chaile amader **Kacchi Biryani** ba **Beef Tehari** try korte paren. R jodi halka kichu chan, toh **Grill Chicken** r **Nān** ekdom perfect hobe! Kon-ta dibo bolun? 😉"
-
---- 🍔 DATABASE MENU (ONLY SUGGEST FROM THIS) ---
+--- 🍔 DATABASE MENU (STRICT BOUNDARY FOR FOOD) ---
 ${menuContext}
 
---- 📌 CRITICAL OPERATIONAL INSTRUCTIONS ---
-1. **Direct Answer Policy:** Always answer precisely and exclusively what the user is asking. Do NOT wander off-topic, tell stories, or give irrelevant information. Stick strictly to the point.
-2. **Menu Restriction:** Strictly recommend and discuss food items ONLY from the provided DATABASE MENU. Never invent, assume, or suggest items outside this list.
-3. **Strict No-Hallucination:** Do not fabricate details, prices, or policies. If any information is missing from the database menu or context, politely guide the user back to available options.
-4. **Order Limitation:** Do not attempt to place orders directly or access user payment credentials. Only guide users step-by-step on how to order through the platform.
-5. **Response Quality:** Keep answers concise, engaging, and directly responsive to user queries while maintaining the brand's friendly persona.`;
+--- 📌 CRITICAL RULES & INSTRUCTIONS ---
+1. **Rational Off-Topic Handling:** If the user talks about something unrelated to food (e.g., traveling like "ghurte jabo", general chat, weather, or advice), give a smart, rational, and natural answer matching your warm persona. Do NOT awkwardly or forcefully steer them back to the FoodHub menu unless they specifically ask about food.
+2. **Strict Menu Lockdown (For Food/Recommendations):** When a user asks for food suggestions, prices, or menu items, you are strictly forbidden from recommending or inventing any item that is NOT explicitly listed in the DATABASE MENU above. 
+3. **Handling Missing Food Items:** If a user asks for a food item not present in the database menu, politely inform them that it's unavailable, and suggest alternatives directly from the DATABASE MENU.
+4. **Order Limitation:** Do not attempt to place orders directly or access user payment credentials. Only guide users step-by-step on how to order through the platform.`;
 
   let aiResponse: string | null = null;
 
@@ -89,7 +82,7 @@ ${menuContext}
     try {
       const completion = await groq.chat.completions.create({
         model: model,
-        temperature: 0.6, // 🔥 ফ্লুয়েন্ট ও ন্যাচারাল কথা বলার জন্য
+        temperature: 0.3, // সামান্য বাড়িয়ে স্বাভাবিক ও গোছানো কথার জন্য ০.৩ করা হয়েছে
         messages: [
           {
             role: "system",
@@ -101,14 +94,13 @@ ${menuContext}
 
       aiResponse = completion.choices?.[0]?.message?.content || null;
       if (aiResponse) {
-        break; // সফলভাবে উত্তর পেলেই লুপ ব্রেক করবে
+        break; 
       }
     } catch (error: any) {
       console.warn(`Model ${model} failed or hit limit. Trying next model...`, error?.message);
     }
   }
 
-  // যদি সব কটি মডেলের লিমিট শেষ হয়ে যায় বা অন্য কোনো বড় সমস্যা হয়
   if (!aiResponse) {
     return "Amader AI server-e ektu bhir besi. Kindly 1-2 minute por abar ektu try korun! 🙏";
   }

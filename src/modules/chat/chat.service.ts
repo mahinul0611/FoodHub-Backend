@@ -17,8 +17,8 @@ const groq = new Groq({ apiKey });
 // 🔄 মডেলগুলোর প্রায়োরিটি লিস্ট (স্মার্ট মডেল থেকে ব্যাকআপ মডেল)
 const AI_MODELS = [
   "llama-3.1-70b-versatile", // ১. সবচেয়ে স্মার্ট মডেল
-  "llama-3.1-8b-instant",     // ২. সুপার ফাস্ট ব্যাকআপ মডেল
-  "mixtral-8x7b-32768"       // ৩. থার্ড ব্যাকআপ অপশন
+  "llama-3.1-8b-instant", // ২. সুপার ফাস্ট ব্যাকআপ মডেল
+  "mixtral-8x7b-32768", // ৩. থার্ড ব্যাকআপ অপশন
 ];
 
 const generateChatResponseFromAI = async (
@@ -44,14 +44,15 @@ const generateChatResponseFromAI = async (
   });
 
   // মেনু ফরম্যাটিং
-  const menuContext = availableMeals.length > 0
-    ? availableMeals
-        .map(
-          (meal) =>
-            `- ${meal.name} (${meal.category?.name || "General"}): ${meal.price} BDT`,
-        )
-        .join("\n")
-    : "No food items currently available in the database.";
+  const menuContext =
+    availableMeals.length > 0
+      ? availableMeals
+          .map(
+            (meal) =>
+              `- ${meal.name} (${meal.category?.name || "General"}): ${meal.price} BDT`,
+          )
+          .join("\n")
+      : "No food items currently available in the database.";
 
   const formattedHistory = recentHistory.map((msg) => ({
     role: msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
@@ -68,6 +69,8 @@ const generateChatResponseFromAI = async (
 
 --- 🍔 DATABASE MENU (STRICT BOUNDARY FOR FOOD) ---
 ${menuContext}
+
+--- Any Complaint send mail to this : support@mahinulislam2208054.me
 
 --- 📌 CRITICAL RULES & INSTRUCTIONS ---
 1. **Rational Off-Topic Handling:** If the user talks about something unrelated to food (e.g., traveling like "ghurte jabo", general chat, weather, or advice), give a smart, rational, and natural answer matching your warm persona. Do NOT awkwardly or forcefully steer them back to the FoodHub menu unless they specifically ask about food.
@@ -94,10 +97,13 @@ ${menuContext}
 
       aiResponse = completion.choices?.[0]?.message?.content || null;
       if (aiResponse) {
-        break; 
+        break;
       }
     } catch (error: any) {
-      console.warn(`Model ${model} failed or hit limit. Trying next model...`, error?.message);
+      console.warn(
+        `Model ${model} failed or hit limit. Trying next model...`,
+        error?.message,
+      );
     }
   }
 

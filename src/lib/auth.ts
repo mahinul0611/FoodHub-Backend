@@ -4,6 +4,7 @@ import { prisma } from "./prisma";
 import { APIError } from "better-auth/api";
 import nodemailer from "nodemailer";
 import { emailController } from "../modules/email/email.controller";
+import { emailService } from "../modules/email/email.service";
 
 export enum UserRole {
   USER = "USER",
@@ -24,13 +25,12 @@ export const transporter = nodemailer.createTransport({
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   trustedOrigins: [
-
-    "https://tangerine-sunflower-702377.netlify.app" ,
+    "https://tangerine-sunflower-702377.netlify.app",
     "https://www.mahinulislam2208054.me",
     "http://localhost:3000",
     "https://food-hub-frontend-flame.vercel.app",
-    "https://www.food-hub-frontend-flame.vercel.app", 
-    "https://www.tangerine-sunflower-702377.netlify.app" ,
+    "https://www.food-hub-frontend-flame.vercel.app",
+    "https://www.tangerine-sunflower-702377.netlify.app",
     "https://mahinulislam2208054.me",
     process.env.APP_URL,
   ].filter(Boolean) as string[],
@@ -83,64 +83,34 @@ export const auth = betterAuth({
   },
 
   databaseHooks: {
-    user: {
-      create: {
-        before: async (user) => {
-          if (user.role === "ADMIN") {
-            throw new Error("Admin creation is not allowed!!!");
-          }
-
-          return {
-            data: user,
-          };
-        },
-
-        after: async (data) => {
-          try {
-            const user = data as any;
-            const userRole = user.role;
-
-            if (userRole === "PROVIDER") {
-              console.log("Creating profile for:", user.email);
-
-              await prisma.providersProfile.create({
-                data: {
-                  userId: user.id,
-                  name: user.name || "New Provider",
-                  email: user.email,
-                },
-              });
-
-
-              console.log("✅ Profile created successfully!");
-            }
-          } catch (error) {
-            console.error("❌ ERROR Creating Profile:", error);
-          }
-        },
-      },
-      update: {
-        before: async (data) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const updates = data as any;
-          if (typeof updates.phone === "string") {
-            return { data: { ...updates, phoneVerified: false } };
-          }
-          return { data: updates };
-        },
-      },
-    },
-
     session: {
       create: {
-        before: async (session) => {
-          const user = await prisma.user.findUnique({
-            where: { id: session.userId },
-          });
-          if (user?.status === "SUSPEND") {
-            throw new APIError("FORBIDDEN", {
-              message: "Your account has been suspended. Contact support.",
+        after: async (session) => {
+          try {
+            // ১. ডাটাবেজ থেকে ইউজারের নাম ও ইমেইল ফেচ করা
+            const user = await prisma.user.findUnique({
+              where: { id: session.userId },
+              select: { email: true, name: true },
             });
+
+            if (user && user.email) {
+              const ipAddress = session.ipAddress || "Unknown IP";
+              const userAgent = session.userAgent || "Unknown Device/Browser";
+              const time = new Date().toLocaleString();
+
+              // ২. ইমেইল সার্ভিসে সেশন ডাটা পাঠানো
+              await emailService.sendLoginAlert(
+                user.email,
+                user.name || "Customer",
+                ipAddress,
+                userAgent,
+                time,
+              );
+
+              console.log("✅ Login session email sent to:", user.email);
+            }
+          } catch (error) {
+            console.error("❌ Login session hook error:", error);
           }
         },
       },

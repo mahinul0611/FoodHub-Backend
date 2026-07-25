@@ -29,7 +29,7 @@ export const auth = betterAuth({
     "https://food-hub-frontend-flame.vercel.app",
     "https://www.food-hub-frontend-flame.vercel.app", 
     "https://tangerine-sunflower-702377.netlify.app"  ,
-    "https://www.tangerine-sunflower-702377.netlify.app"  ,
+    "https://www.tangerine-sunflower-702377.netlify.app" ,
     "https://mahinulislam2208054.me",
     process.env.APP_URL,
   ].filter(Boolean) as string[],

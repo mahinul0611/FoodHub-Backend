@@ -18,6 +18,7 @@ import { complaintRoutes } from "./modules/complaint/complaint.route";
 import { paymentRoutes } from "./modules/payment/payment.route";
 import { couponRoutes } from "./modules/coupon/coupon.route";
 import { ChatRoutes } from "./modules/chat/chat.route";
+import { emailRoutes } from "./modules/email/email.route";
 
 const app: Application = express();
 
@@ -55,7 +56,7 @@ app.use("/orders", orderRouter);
 app.use("/phone", phoneRoutes);
 app.use("/reviews", reviewRouter);
 app.use("/complaints", complaintRoutes);
-
+app.use("/email", emailRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

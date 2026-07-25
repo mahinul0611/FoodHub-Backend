@@ -34,7 +34,7 @@ const sendLoginAlert = async (
     `;
 
     await transporter.sendMail({
-      from: `"FoodHub Security" <${process.env.APP_USER}>`,
+      from: `"FoodHub Security" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,

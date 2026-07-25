@@ -28,7 +28,6 @@ app.use(
   }),
 );
 
-app.set("trust proxy", true);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // SSLCommerz form-data pathay — eta MUST (already thakle skip)

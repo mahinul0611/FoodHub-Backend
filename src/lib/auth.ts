@@ -99,7 +99,7 @@ export const auth = betterAuth({
               const time = new Date().toLocaleString();
 
               // ২. ইমেইল সার্ভিসে সেশন ডাটা পাঠানো
-              await emailService.sendLoginAlert(
+               emailService.sendLoginAlert(
                 user.email,
                 user.name || "Customer",
                 ipAddress,

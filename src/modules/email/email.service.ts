@@ -1,12 +1,12 @@
 import nodemailer from "nodemailer";
 
-export const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: false,
+const transporter = nodemailer.createTransport({
+  host: "mail.privateemail.com",
+  port: 465,  //587 secure false   ... 465 secure true
+  secure: true,
   auth: {
-    user: "support@mahinulislam2208054.me",
-    pass: "M@hinul06",
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 

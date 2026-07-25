@@ -2,12 +2,19 @@ import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
   host: "mail.privateemail.com",
-  port: 587,
-  secure: false,
+  port: 465, // 👈 587 এর বদলে অবশ্যই 465 দিন
+  secure: true, // 👈 true করে দিন
   auth: {
     user: process.env.APP_USER,
     pass: process.env.APP_PASSWORD,
   },
+  tls: {
+    // ক্লাউড সার্ভার থেকে কানেকশন রিজেক্ট হওয়া ঠেকাতে এটি দেওয়া হলো
+    rejectUnauthorized: false 
+  },
+  connectionTimeout: 40000, // 👈 কানেকশনের জন্য ২০ সেকেন্ড অপেক্ষা করবে (টাইমআউট হবে না)
+  greetingTimeout: 40000,
+  socketTimeout: 40000,
 });
 
 const sendLoginAlert = async (

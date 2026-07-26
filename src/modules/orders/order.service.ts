@@ -1,3 +1,4 @@
+import { OrdersStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { couponService, DELIVERY_CHARGE } from "../coupon/coupon.service";
 import { emailService } from "../email/email.service"; // 👈 ইমেইল সার্ভিস ইমপোর্ট করা হলো
@@ -81,7 +82,7 @@ const createOrder = async (userId: string, data: any) => {
       select: { email: true, name: true },
     });
 
-    if (user?.email) {
+    if (user?.email && order.status==OrdersStatus.PLACED) {
       emailService
         .sendOrderConfirmation(
           user.email,

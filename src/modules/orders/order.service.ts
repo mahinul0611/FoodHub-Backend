@@ -73,6 +73,8 @@ const createOrder = async (userId: string, data: any) => {
   );
 
   // 🚀 ট্রানজেকশন শেষ হওয়ার পর ব্যাকগ্রাউন্ডে অর্ডার কনফার্মেশন মেইল পাঠানো
+
+
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -156,16 +158,10 @@ const updateOrderStatus = async (orderId: string, status: any) => { // 👈 stat
     },
   });
 
-  if (updatedOrder?.user?.email) {
-    emailService
-      .sendOrderStatus(
-        updatedOrder.user.email,
-        updatedOrder.user.name || "Customer",
-        updatedOrder.id,
-        updatedOrder.status
-      )
-      .catch((err) => console.error("Background Status Email Error:", err));
-  }
+
+  // Send Order Status Email : 
+
+  
 
   return updatedOrder;
 };

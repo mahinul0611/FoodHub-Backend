@@ -25,7 +25,7 @@ const sendOtp = async (userId: string) => {
   });
 
   await transporter.sendMail({
-    from: '"FoodHub" <noreply@mahinulislam2208054.me>',
+    from: '"FoodHub" <hello@mahinul.tech>',
     to: user.email,
     subject: "Your FoodHub phone verification code",
     html: `<div style="margin:0;padding:24px 12px;background-color:#f5f5f4;font-family:Arial,Helvetica,sans-serif;">

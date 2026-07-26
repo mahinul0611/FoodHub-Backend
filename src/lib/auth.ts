@@ -22,16 +22,23 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
+// Production e ekbar console e dekhabe smt on hoise kina??
+if (process.env.SMTP_VERIFY_ON_START === "true") {
+  transporter.verify((err, success) => {
+    if (err) console.error("SMTP verify failed:", err);
+    else console.log("SMTP ready:", success);
+  });
+}
+
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   trustedOrigins: [
     "https://tangerine-sunflower-702377.netlify.app",
-    "https://www.mahinulislam2208054.me",
+    "https://www.mahinul.tech",
+    "https://mahinul.tech",
     "http://localhost:3000",
-    "https://food-hub-frontend-flame.vercel.app",
-    "https://www.food-hub-frontend-flame.vercel.app",
     "https://www.tangerine-sunflower-702377.netlify.app",
-    "https://mahinulislam2208054.me",
     process.env.APP_URL,
   ].filter(Boolean) as string[],
   account: {
@@ -133,7 +140,7 @@ export const auth = betterAuth({
 
       try {
         const info = await transporter.sendMail({
-          from: '"FoodHub" <noreply@mahinulislam2208054.me>',
+          from: '"FoodHub" <hello@mahinul.tech>',
           to: user.email,
           subject: "Reset your FoodHub password",
           html: `
@@ -209,7 +216,7 @@ export const auth = betterAuth({
 
       try {
         const info = await transporter.sendMail({
-          from: `"FoodHub" <noreply@mahinulislam2208054.me>`,
+          from: `"FoodHub" <hello@mahinul.tech>`,
           to: user.email,
           subject: "Confirm your FoodHub account",
           html: `

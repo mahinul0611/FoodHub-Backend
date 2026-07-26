@@ -37,7 +37,7 @@ app.use("/payments", paymentRoutes);
 app.use("/coupons", couponRoutes);
 app.use("/chat", ChatRoutes);
 app.all("/api/auth", toNodeHandler(auth));
-app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/*splash", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello from FoodHub Server v7");

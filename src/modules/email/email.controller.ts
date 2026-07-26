@@ -48,6 +48,20 @@ const triggerLoginAlert = async (req: Request, res: Response) => {
 };
 
 // অর্ডার প্লেস হওয়ার সময় যেভাবে অর্ডার ক্রিয়েট ও ইমেইল ট্রিগার করবেন:
+const sendOrderConfirmation = async (req:Request, res:Response)=>{
+
+  try {
+    
+  } catch (err:any) {
+    res.status
+  }
+
+
+
+
+}
+
+
 
 // অর্ডারের স্ট্যাটাস পরিবর্তন (যেমন DELIVERED হলে) করার সময় যেভাবে মেইল পাঠাবেন:
 

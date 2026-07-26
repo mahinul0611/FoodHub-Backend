@@ -135,7 +135,7 @@ const cancelMyOrder = async (userId: string, orderId: string) => {
       "This order is already being prepared and can no longer be cancelled!",
     );
 
-  return await prisma.orders.update({
+  const result =  await prisma.orders.update({
     where: { id: orderId },
     data: {
       status: "CANCELLED",
@@ -144,6 +144,28 @@ const cancelMyOrder = async (userId: string, orderId: string) => {
         : { paymentStatus: "CANCELLED" }),
     },
   });
+
+  try {
+      const user = await prisma.user.findUnique({
+        where: { id: result.userId },
+        select: { email: true, name: true },
+      });
+  
+      if (user?.email) {
+        emailService
+          .sendOrderStatus(
+            user.email,
+            user.name || "Customer",
+            result.id,
+            result.status
+          )
+          .catch((err) => console.error("Background Order Email Error:", err));
+      }
+    } catch (emailErr) {
+      console.error("Failed to trigger order confirmation email:", emailErr);
+    }
+
+  return result
 };
 
 // 🆕 অর্ডার স্ট্যাটাস আপডেট করার সার্ভিস (যেমন DELIVERED হলে মেইল যাবে)

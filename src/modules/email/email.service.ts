@@ -34,7 +34,7 @@ const sendLoginAlert = async (
     `;
 
     await transporter.sendMail({
-      from: `"FoodHub Security" <${process.env.SMTP_USER}>`,
+     from: '"FoodHub" <hello@mahinul.tech>',
       to,
       subject,
       html,
@@ -47,3 +47,6 @@ const sendLoginAlert = async (
 export const emailService = {
   sendLoginAlert,
 };
+
+
+

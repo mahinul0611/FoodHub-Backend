@@ -89,40 +89,37 @@ export const auth = betterAuth({
     },
   },
 
-  databaseHooks: {
-    session: {
-      create: {
-        after: async (session) => {
-          try {
-            // ১. ডাটাবেজ থেকে ইউজারের নাম ও ইমেইল ফেচ করা
-            const user = await prisma.user.findUnique({
-              where: { id: session.userId },
-              select: { email: true, name: true },
-            });
+ databaseHooks: {
+  session: {
+    create: {
+      after: async (session) => {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { email: true, name: true },
+          });
 
-            if (user && user.email) {
-              const ipAddress = session.ipAddress || "Unknown IP";
-              const userAgent = session.userAgent || "Unknown Device/Browser";
-              const time = new Date().toLocaleString();
+          if (user && user.email) {
+            const ipAddress = session.ipAddress || "Unknown IP";
+            const userAgent = session.userAgent || "Unknown Device/Browser";
+            const time = new Date().toLocaleString();
 
-              // ২. ইমেইল সার্ভিসে সেশন ডাটা পাঠানো
-               emailService.sendLoginAlert(
-                user.email,
-                user.name || "Customer",
-                ipAddress,
-                userAgent,
-                time,
-              );
-
-              console.log("✅ Login session email sent to:", user.email);
-            }
-          } catch (error) {
-            console.error("❌ Login session hook error:", error);
+            // fire-and-forget — login response block করবে না
+            emailService.sendLoginAlert(
+              user.email,
+              user.name || "Customer",
+              ipAddress,
+              userAgent,
+              time,
+            );
           }
-        },
+        } catch (error) {
+          console.error("❌ Login session hook error:", error);
+        }
       },
     },
   },
+},
   // trustedOrigins: [process.env.APP_URL!],
 
   emailAndPassword: {

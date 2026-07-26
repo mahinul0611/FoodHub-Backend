@@ -1,5 +1,6 @@
 import { Orders, OrdersStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
+import { emailService } from "../email/email.service";
 
 const getAllProvider = async () => {
   const result = await prisma.providersProfile.findMany();
@@ -47,7 +48,7 @@ const getProviderOrder = async (providerId: string) => {
   return result;
 };
 
-const updateOrderStatus = async (orderId: string, status: OrdersStatus) => {
+const updateOrderStatus = async (orderId: string,  status: OrdersStatus) => {
 
 
   // ১. প্রথমে ডাটাবেজ থেকে অর্ডারটি খুঁজে বের করো
@@ -78,6 +79,27 @@ const updateOrderStatus = async (orderId: string, status: OrdersStatus) => {
       status: status as OrdersStatus,
     },
   });
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: result.userId },
+        select: { email: true, name: true },
+      });
+  
+      if (user?.email) {
+        emailService
+          .sendOrderStatus(
+            user.email,
+            user.name || "Customer",
+            result.id,
+            result.status
+          )
+          .catch((err) => console.error("Background Order Email Error:", err));
+      }
+    } catch (emailErr) {
+      console.error("Failed to trigger order confirmation email:", emailErr);
+    }
+
 
   return result;
 };

@@ -199,7 +199,7 @@ export const auth = betterAuth({
     freshAge: 0,
   },
   advanced: {
-    useSecureCookies: false,
+    useSecureCookies: process.env.NODE_ENV === "production",
   },
   emailVerification: {
     sendOnSignUp: true,

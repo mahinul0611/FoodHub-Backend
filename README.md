@@ -8,7 +8,7 @@ Built with **Node.js**, **Express**, **TypeScript**, **PostgreSQL**, and **Bette
 
 ## 🌐 Live Deployment
 
-🔗 **API Base URL:** [https://foodhub-backend-7.onrender.com/](https://foodhub-backend-7.onrender.com/)  
+🔗 **API Base URL:** [https://api.mahinul.tech](https://api.mahinul.tech)  
 🔗 **Local Development:** `http://localhost:5000`
 
 ---

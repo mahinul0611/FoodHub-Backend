@@ -1,4 +1,4 @@
-import { OrdersStatus } from "../../../generated/prisma/enums";
+import { OrdersStatus, PaymentMethod } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { couponService, DELIVERY_CHARGE } from "../coupon/coupon.service";
 import { emailService } from "../email/email.service"; // 👈 ইমেইল সার্ভিস ইমপোর্ট করা হলো
@@ -50,7 +50,7 @@ const createOrder = async (userId: string, data: any) => {
           deliveryCharge: DELIVERY_CHARGE,
           discount,
           couponCode: appliedCode,
-          status: "PLACED",
+          status: OrdersStatus.PLACED,
           providerId: meals[0]!.providerId,
           orderItems: {
             create: orderItems,
@@ -74,29 +74,32 @@ const createOrder = async (userId: string, data: any) => {
   );
 
   // 🚀 ট্রানজেকশন শেষ হওয়ার পর ব্যাকগ্রাউন্ডে অর্ডার কনফার্মেশন মেইল পাঠানো
-
-
+  // 🚀 ইমেইল পাঠানোর লজিক (শুধুমাত্র COD এর জন্য)
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true, name: true },
-    });
+    // সরাসরি Enum ব্যবহার করে চেক করা হচ্ছে
+    if (data.paymentMethod === PaymentMethod.COD) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
+      });
 
-
-    if (user?.email && order.status==OrdersStatus.PLACED) {
-      emailService
-        .sendOrderConfirmation(
-          user.email,
-          user.name || "Customer",
-          order.id,
-          
-          Number(order.totalPrice)
-        )
-        .catch((err) => console.error("Background Order Email Error:", err));
+      if (user?.email && order.status === OrdersStatus.PLACED) {
+        emailService
+          .sendOrderConfirmation(
+            user.email,
+            user.name || "Customer",
+            order.id,
+            Number(order.totalPrice)
+          )
+          .catch((err) => console.error("COD Background Email Error:", err));
+      }
     }
   } catch (emailErr) {
-    console.error("Failed to trigger order confirmation email:", emailErr);
+    console.error("Failed to trigger COD order confirmation email:", emailErr);
   }
+
+
+ 
 
   return order;
 };

@@ -84,7 +84,7 @@ export const toolHandlers = {
           data: {
             id: uniqueId,
             name: "Guest Customer",
-            email: `${uniqueId}@foodhub.com`,
+            email: `${uniqueId}@b.com`,
             phone: cleanPhone,
           },
         });

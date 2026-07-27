@@ -48,11 +48,11 @@ const initPayment = async (userId: string, orderId: string) => {
     cancel_url: `${BACKEND_URL}/payments/cancel`,
     ipn_url: `${BACKEND_URL}/payments/ipn`,
     shipping_method: "NO",
-    product_name: "FoodHub order",
+    product_name: "BiteBear order",
     product_category: "Food",
     product_profile: "general",
-    cus_name: order.user?.name ?? "FoodHub customer",
-    cus_email: order.user?.email ?? "customer@foodhub.com",
+    cus_name: order.user?.name ?? "BiteBeard customer",
+    cus_email: order.user?.email ?? "customer@bitebear.com",
     cus_add1: order.address ?? "Dhaka",
     cus_city: "Dhaka",
     cus_country: "Bangladesh",
@@ -184,7 +184,7 @@ const initStripePayment = async (userId: string, orderId: string) => {
         price_data: {
           currency: "bdt",
           product_data: {
-            name: `FoodHub Order #${orderId.slice(0, 8).toUpperCase()}`,
+            name: `BiteBear Order #${orderId.slice(0, 8).toUpperCase()}`,
           },
           unit_amount: Math.round(amount * 100),
         },

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { paymentService } from "./payment.service";
 
 const FRONTEND_URL =
-  process.env.APP_URL ?? "https://food-hub-frontend-flame.vercel.app";
+  process.env.APP_URL ?? "https://mahinul.tech";
 
 const init = async (req: Request, res: Response) => {
   try {

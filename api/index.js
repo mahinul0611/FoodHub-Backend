@@ -362,7 +362,7 @@ var auth = betterAuth({
       try {
         const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
         const info = await transporter.sendMail({
-          from: '"FoodHub" <foodhub@food.com>',
+          from: '"BiteBear" <bitebear@food.com>',
           to: user.email,
           subject: "Email Verification",
           // text: "Verify your email", // Plain-text version of the message
@@ -385,12 +385,12 @@ var auth = betterAuth({
 <body>
   <div class="container">
     <div class="header">
-      <h1>FoodHub</h1>
+      <h1>BiteBear</h1>
     </div>
     <div class="content">
-      <h2>Welcome to FoodHub!</h2>
+      <h2>Welcome to BiteBear!</h2>
       <p>Hello,${user.name}</p>
-      <p>Thank you for signing up for FoodHub. We're excited to have you join our food delivery community! To get started, please verify your email address by clicking the button below.</p>
+      <p>Thank you for signing up for BiteBear. We're excited to have you join our food delivery community! To get started, please verify your email address by clicking the button below.</p>
       
       <div class="button-container">
         <a href="${verificationUrl}" class="verify-button">Verify Email Address</a>
@@ -402,7 +402,7 @@ var auth = betterAuth({
       <p>This link will expire in 24 hours. If you did not create an account, no further action is required.</p>
     </div>
     <div class="footer">
-      <p>&copy; 2026 FoodHub Delivery Service. All rights reserved.</p>
+      <p>&copy; 2026 BiteBear Delivery Service. All rights reserved.</p>
       <p>Dhaka, Bangladesh</p>
     </div>
   </div>
@@ -1647,7 +1647,7 @@ app.use(cors(
 app.use(express8.json());
 app.all("/api/auth/*splat", toNodeHandler(auth));
 app.get("/", (req, res) => {
-  res.send("Hello from FoodHub Server");
+  res.send("Hello from BiteBear Server");
 });
 app.use("/admin", adminRouter);
 app.use("/me", meRouter);

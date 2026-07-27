@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-
+import { OrdersStatus } from "../../../generated/prisma/enums";
 export const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: Number(process.env.SMTP_PORT) || 587,
@@ -115,30 +115,39 @@ async function sendOrderConfirmation(
 }
 
 const statusMeta: Record<
-  string,
+  OrdersStatus,
   { emoji: string; title: string; message: string; color: string }
 > = {
-  PLACED: {
+  [OrdersStatus.PLACED]: {
     emoji: "🧾",
     title: "Order Placed",
     message: "We've received your order and it's being processed.",
     color: "#ea580c",
   },
 
-  PREPARING: {
+  [OrdersStatus.PREPARING]: {
     emoji: "👨‍🍳",
     title: "Preparing Your Order",
     message: "Your meal is being freshly prepared right now.",
     color: "#0891b2",
   },
 
-  DELIVERED: {
+  // READY স্ট্যাটাসটি যোগ করা হয়েছে
+  [OrdersStatus.READY]: {
+    emoji: "🛍️",
+    title: "Order Ready",
+    message: "Your order is ready to be delivered.",
+    color: "#f59e0b",
+  },
+
+  [OrdersStatus.DELIVERED]: {
     emoji: "📦",
     title: "Order Delivered",
     message: "Your order has been delivered. Enjoy your meal!",
     color: "#16a34a",
   },
-  CANCELLED: {
+  
+  [OrdersStatus.CANCELLED]: {
     emoji: "❌",
     title: "Order Cancelled",
     message:
@@ -147,7 +156,7 @@ const statusMeta: Record<
   },
 };
 
-function buildOrderStatusHtml(name: string, orderId: string, status: string) {
+function buildOrderStatusHtml(name: string, orderId: string, status: OrdersStatus) {
   const meta = statusMeta[status] || {
     emoji: "📬",
     title: "Order Update",
@@ -179,7 +188,7 @@ function buildOrderStatusHtml(name: string, orderId: string, status: string) {
          
           <tr>
             <td style="padding:10px 16px;font-weight:bold;">Status</td>
-            <td style="padding:10px 16px;">${status}</td>
+            <td style="padding:10px 16px;">${meta.title}</td>
           </tr>
         </table>
       </td>
@@ -197,7 +206,7 @@ async function sendOrderStatus(
   email: string,
   name: string,
   orderId: string,
-  status: string,
+  status: OrdersStatus,
 ) {
   try {
     const meta = statusMeta[status];

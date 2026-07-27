@@ -62,9 +62,9 @@ const updateOrderStatus = async (orderId: string,  status: OrdersStatus) => {
 
   // ২. চেক করো অর্ডারটি ইতিমধ্যেই DELIVERED বা CANCELLED কি না
   if (
-    existingOrder.status === "DELIVERED" ||
-    existingOrder.status === "CANCELLED"
-  ) {
+  existingOrder.status === OrdersStatus.DELIVERED ||
+  existingOrder.status === OrdersStatus.CANCELLED
+) {
     throw new Error(
       `Cannot update status. Order is already ${existingOrder.status.toLowerCase()}.`
     );

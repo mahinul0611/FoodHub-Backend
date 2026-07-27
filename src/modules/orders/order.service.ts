@@ -172,7 +172,7 @@ const cancelMyOrder = async (userId: string, orderId: string) => {
 
 // 🆕 অর্ডার স্ট্যাটাস আপডেট করার সার্ভিস (যেমন DELIVERED হলে মেইল যাবে)
 // orderService এর ভিতরে updateOrderStatus ফাংশনটি এভাবে ঠিক করুন:
-const updateOrderStatus = async (orderId: string, status: any) => { // 👈 status-কে any বা প্রিজমা এনুম টাইপ দিন
+const updateOrderStatus = async (orderId: string, status: OrdersStatus) => { // 👈 status-কে any বা প্রিজমা এনুম টাইপ দিন
   const updatedOrder = await prisma.orders.update({
     where: { id: orderId },
     data: { status }, // এখানে টাইপ এরর দিবে না

@@ -137,16 +137,16 @@ export const auth = betterAuth({
 
       try {
         const info = await transporter.sendMail({
-          from: '"FoodHub" <hello@mahinul.tech>',
+          from: '"BiteBear" <hello@mahinul.tech>',
           to: user.email,
-          subject: "Reset your FoodHub password",
+          subject: "Reset your BiteBear password",
           html: `
 <div style="margin:0;padding:24px 12px;background-color:#f5f5f4;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e7e5e4;">
     <tr>
       <td style="background:linear-gradient(135deg,#fb923c,#ea580c);background-color:#ea580c;padding:32px 24px;text-align:center;">
         <p style="margin:0;font-size:44px;line-height:1;">🔑</p>
-        <p style="margin:8px 0 0;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">FoodHub</p>
+        <p style="margin:8px 0 0;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">BiteBear</p>
         <p style="margin:4px 0 0;font-size:13px;color:#ffedd5;">Password reset request</p>
       </td>
     </tr>
@@ -154,7 +154,7 @@ export const auth = betterAuth({
       <td style="padding:32px 28px;">
         <h1 style="margin:0 0 12px;font-size:20px;color:#1c1917;">Hi ${user.name || "there"},</h1>
         <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#57534e;">
-          We received a request to reset your FoodHub password.
+          We received a request to reset your BiteBear password.
           Click the button below to choose a new one.
         </p>
         <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
@@ -177,7 +177,7 @@ export const auth = betterAuth({
     </tr>
     <tr>
       <td style="padding:16px 28px;background-color:#fafaf9;border-top:1px solid #f5f5f4;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#a8a29e;">FoodHub &middot; Fresh meals, delivered to your door</p>
+        <p style="margin:0;font-size:11px;color:#a8a29e;">BiteBear &middot; Fresh meals, delivered to your door</p>
       </td>
     </tr>
   </table>
@@ -213,22 +213,22 @@ export const auth = betterAuth({
 
       try {
         const info = await transporter.sendMail({
-          from: `"FoodHub" <hello@mahinul.tech>`,
+          from: `"BiteBear" <hello@mahinul.tech>`,
           to: user.email,
-          subject: "Confirm your FoodHub account",
+          subject: "Confirm your BiteBear account",
           html: `
 <div style="margin:0;padding:24px 12px;background-color:#f5f5f4;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e7e5e4;">
     <tr>
       <td style="background:linear-gradient(135deg,#fb923c,#ea580c);background-color:#ea580c;padding:32px 24px;text-align:center;">
         <p style="margin:0;font-size:44px;line-height:1;">🍜</p>
-        <p style="margin:8px 0 0;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">FoodHub</p>
+        <p style="margin:8px 0 0;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">BiteBear</p>
         <p style="margin:4px 0 0;font-size:13px;color:#ffedd5;">Fresh meals, delivered</p>
       </td>
     </tr>
     <tr>
       <td style="padding:32px 28px;">
-        <h1 style="margin:0 0 12px;font-size:20px;color:#1c1917;">Welcome to FoodHub, ${user.name || "there"}! 🎉</h1>
+        <h1 style="margin:0 0 12px;font-size:20px;color:#1c1917;">Welcome to BiteBear, ${user.name || "there"}! 🎉</h1>
         <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#57534e;">
           You're one step away from ordering delicious home-made meals.
           Please confirm your email address to activate your account.
@@ -251,7 +251,7 @@ export const auth = betterAuth({
     <tr>
       <td style="padding:16px 28px;background-color:#fafaf9;border-top:1px solid #f5f5f4;text-align:center;">
         <p style="margin:0;font-size:11px;color:#a8a29e;">
-          You received this email because you signed up on FoodHub.<br/>
+          You received this email because you signed up on BiteBear.<br/>
           If this wasn't you, you can safely ignore this email.
         </p>
       </td>
@@ -281,10 +281,10 @@ export const auth = betterAuth({
     //                 "content-type": "application/json",
     //             },
     //             body: JSON.stringify({
-    //                 sender: { name: "FoodHub", email: "tomar-gmail@gmail.com" },
+    //                 sender: { name: "BiteBear", email: "tomar-gmail@gmail.com" },
     //                 to: [{ email: user.email }],
-    //                 subject: "Verify your FoodHub email",
-    //                 htmlContent: `<p>Welcome to FoodHub! Click the link to verify your email:</p><p><a href="${url}">Verify email</a></p>`,
+    //                 subject: "Verify your BiteBear email",
+    //                 htmlContent: `<p>Welcome to BiteBear! Click the link to verify your email:</p><p><a href="${url}">Verify email</a></p>`,
     //             }),
     //         });
     //         const body = await res.text();

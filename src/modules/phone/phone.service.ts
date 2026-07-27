@@ -25,15 +25,15 @@ const sendOtp = async (userId: string) => {
   });
 
   await transporter.sendMail({
-    from: '"FoodHub" <hello@mahinul.tech>',
+    from: '"BiteBear" <hello@mahinul.tech>',
     to: user.email,
-    subject: "Your FoodHub phone verification code",
+    subject: "Your BiteBear phone verification code",
     html: `<div style="margin:0;padding:24px 12px;background-color:#f5f5f4;font-family:Arial,Helvetica,sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:520px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e7e5e4;">
     <tr>
       <td style="background:linear-gradient(135deg,#fb923c,#ea580c);background-color:#ea580c;padding:28px 24px;text-align:center;">
         <p style="margin:0;font-size:40px;line-height:1;">📱</p>
-        <p style="margin:8px 0 0;font-size:24px;font-weight:bold;color:#ffffff;">FoodHub</p>
+        <p style="margin:8px 0 0;font-size:24px;font-weight:bold;color:#ffffff;">BiteBear</p>
         <p style="margin:4px 0 0;font-size:13px;color:#ffedd5;">Phone verification</p>
       </td>
     </tr>

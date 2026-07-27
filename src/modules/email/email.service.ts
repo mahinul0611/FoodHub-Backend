@@ -18,12 +18,12 @@ const sendLoginAlert = async (
   time: string,
 ) => {
   try {
-    const subject = "Security Alert: New Login to FoodHub";
+    const subject = "Security Alert: New Login to BiteBear";
     const html = `
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
         <h2 style="color: #e11d48;">New Login Detected</h2>
         <p>Hello <strong>${userName}</strong>,</p>
-        <p>We noticed a new login to your FoodHub account with the following session details:</p>
+        <p>We noticed a new login to your BiteBear account with the following session details:</p>
         <ul style="background: #f4f4f5; padding: 15px; border-radius: 8px; list-style: none;">
           <li>📍 <strong>IP Address:</strong> ${ipAddress}</li>
           <li>💻 <strong>Device/Browser:</strong> ${userAgent}</li>
@@ -34,7 +34,7 @@ const sendLoginAlert = async (
     `;
 
     await transporter.sendMail({
-      from: '"FoodHub" <hello@mahinul.tech>',
+      from: '"BiteBear" <hello@mahinul.tech>',
       to,
       subject,
       html,
@@ -55,7 +55,7 @@ function buildOrderConfirmationHtml(
     <tr>
       <td style="background:linear-gradient(135deg,#fb923c,#ea580c);background-color:#ea580c;padding:32px 24px;text-align:center;">
         <p style="margin:0;font-size:44px;line-height:1;">🍜</p>
-        <p style="margin:8px 0 0;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">FoodHub</p>
+        <p style="margin:8px 0 0;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">BiteBear</p>
         <p style="margin:4px 0 0;font-size:13px;color:#ffedd5;">Order confirmed</p>
       </td>
     </tr>
@@ -87,7 +87,7 @@ function buildOrderConfirmationHtml(
     </tr>
     <tr>
       <td style="padding:16px 28px;background-color:#fafaf9;border-top:1px solid #f5f5f4;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#a8a29e;">FoodHub &middot; Fresh meals, delivered to your door</p>
+        <p style="margin:0;font-size:11px;color:#a8a29e;">BiteBear &middot; Fresh meals, delivered to your door</p>
       </td>
     </tr>
   </table>
@@ -102,7 +102,7 @@ async function sendOrderConfirmation(
 ) {
   try {
     const info = await transporter.sendMail({
-      from: `"FoodHub" <hello@mahinul.tech>`,
+      from: `"BiteBear" <hello@mahinul.tech>`,
       to: email,
       subject: `Order Confirmed — #${orderId.slice(0, 8)}`,
       html: buildOrderConfirmationHtml(name, orderId, totalPrice),
@@ -170,7 +170,7 @@ function buildOrderStatusHtml(name: string, orderId: string, status: OrdersStatu
     <tr>
       <td style="background-color:${meta.color};padding:32px 24px;text-align:center;">
         <p style="margin:0;font-size:44px;line-height:1;">${meta.emoji}</p>
-        <p style="margin:8px 0 0;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">FoodHub</p>
+        <p style="margin:8px 0 0;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">BiteBear</p>
         <p style="margin:4px 0 0;font-size:13px;color:#ffffffcc;">${meta.title}</p>
       </td>
     </tr>
@@ -195,7 +195,7 @@ function buildOrderStatusHtml(name: string, orderId: string, status: OrdersStatu
     </tr>
     <tr>
       <td style="padding:16px 28px;background-color:#fafaf9;border-top:1px solid #f5f5f4;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#a8a29e;">FoodHub &middot; Fresh meals, delivered to your door</p>
+        <p style="margin:0;font-size:11px;color:#a8a29e;">BiteBear &middot; Fresh meals, delivered to your door</p>
       </td>
     </tr>
   </table>
@@ -211,7 +211,7 @@ async function sendOrderStatus(
   try {
     const meta = statusMeta[status];
     const info = await transporter.sendMail({
-      from: `"FoodHub" <hello@mahinul.tech>`,
+      from: `"BiteBear" <hello@mahinul.tech>`,
       to: email,
       subject: `${meta?.title || "Order Update"} — #${orderId.slice(0, 8)}`,
       html: buildOrderStatusHtml(name, orderId, status),

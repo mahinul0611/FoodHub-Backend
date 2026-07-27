@@ -2,7 +2,7 @@ import { ComplaintCategory, ComplaintStatus } from "../../../generated/prisma/en
 import { transporter } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 
-const FROM = '"FoodHub" <noreply@mahinulislam2208054.me>';
+const FROM = '"BiteBear" <noreply@mahinulislam2208054.me>';
 
 const createComplaint = async (
   userId: string,
@@ -72,7 +72,7 @@ if (!providerUserId) {
         from: FROM,
         to,
         subject: `New complaint for order #${shortId}`,
-        text: `${customer?.name ?? "A customer"} reported an issue with order #${shortId}.\n\nCategory: ${category}\n\n${description.trim()}\n\nPlease review it from your FoodHub dashboard.`,
+        text: `${customer?.name ?? "A customer"} reported an issue with order #${shortId}.\n\nCategory: ${category}\n\n${description.trim()}\n\nPlease review it from your BiteBear dashboard.`,
         html: `
           <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;">
             <h2 style="color:#ea580c;">New order complaint</h2>
@@ -81,7 +81,7 @@ if (!providerUserId) {
             <div style="border:1px solid #e5e5e5;border-radius:8px;padding:12px;background:#fafafa;">
               ${description.trim()}
             </div>
-            <p style="margin-top:16px;">Please review it from your FoodHub dashboard.</p>
+            <p style="margin-top:16px;">Please review it from your BiteBear dashboard.</p>
           </div>`,
       });
     }
@@ -199,7 +199,7 @@ const updateComplaint = async (
               <h2 style="color:#ea580c;">Complaint ${payload.status === "RESOLVED" ? "resolved" : "update"}</h2>
               <p>Your complaint for order <strong>#${shortId}</strong> has been <strong>${payload.status.toLowerCase()}</strong>.</p>
               ${updated.resolution ? `<div style="border:1px solid #e5e5e5;border-radius:8px;padding:12px;background:#fafafa;">${updated.resolution}</div>` : ""}
-              <p style="margin-top:16px;">Thank you for helping us improve FoodHub.</p>
+              <p style="margin-top:16px;">Thank you for helping us improve BiteBear.</p>
             </div>`,
         });
       }

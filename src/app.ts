@@ -40,7 +40,7 @@ app.all("/api/auth", toNodeHandler(auth));
 app.all("/api/auth/*splash", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello from FoodHub Server v7");
+  res.send("Hello from BiteBear Server v7");
 });
 
 app.use("/admin", adminRouter);

@@ -1,6 +1,6 @@
-# 🍱 FoodHub Management System (Backend)
+# 🍱 BiteBear Management System (Backend)
 
-FoodHub is a comprehensive full-stack backend solution for a multi-vendor meal ordering platform. It enables customers to discover and order meals, providers to manage their menus, and admins to oversee the entire ecosystem with role-based security.
+BiteBear is a comprehensive full-stack backend solution for a multi-vendor meal ordering platform. It enables customers to discover and order meals, providers to manage their menus, and admins to oversee the entire ecosystem with role-based security.
 
 Built with **Node.js**, **Express**, **TypeScript**, **PostgreSQL**, and **BetterAuth**.
 
@@ -149,7 +149,7 @@ http://localhost:5000/
 
 ## 📦 GitHub Repository
 
-🔗 https://github.com/mahinul0611/FoodHub-Backend
+🔗 https://github.com/mahinul0611/foodhub-Backend
 
 ---
 

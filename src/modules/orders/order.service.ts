@@ -82,12 +82,14 @@ const createOrder = async (userId: string, data: any) => {
       select: { email: true, name: true },
     });
 
+
     if (user?.email && order.status==OrdersStatus.PLACED) {
       emailService
         .sendOrderConfirmation(
           user.email,
           user.name || "Customer",
           order.id,
+          
           Number(order.totalPrice)
         )
         .catch((err) => console.error("Background Order Email Error:", err));

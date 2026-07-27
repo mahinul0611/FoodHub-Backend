@@ -92,7 +92,7 @@ const updateOrderStatus = async (orderId: string,  status: OrdersStatus) => {
             user.email,
             user.name || "Customer",
             result.id,
-            result.status
+            result.status.OrdersStatus
           )
           .catch((err) => console.error("Background Order Email Error:", err));
       }

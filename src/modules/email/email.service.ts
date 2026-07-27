@@ -15,7 +15,7 @@ const sendLoginAlert = async (
   userName: string,
   ipAddress: string,
   userAgent: string,
-  time: string
+  time: string,
 ) => {
   try {
     const subject = "Security Alert: New Login to FoodHub";
@@ -34,7 +34,7 @@ const sendLoginAlert = async (
     `;
 
     await transporter.sendMail({
-     from: '"FoodHub" <hello@mahinul.tech>',
+      from: '"FoodHub" <hello@mahinul.tech>',
       to,
       subject,
       html,
@@ -43,7 +43,6 @@ const sendLoginAlert = async (
     console.error("Login alert email error:", error);
   }
 };
-
 
 function buildOrderConfirmationHtml(
   name: string,
@@ -71,6 +70,7 @@ function buildOrderConfirmationHtml(
             <td style="padding:10px 16px;font-weight:bold;width:130px;">Order ID</td>
             <td style="padding:10px 16px;word-break:break-all;">${orderId}</td>
           </tr>
+          
           <tr>
             <td style="padding:10px 16px;font-weight:bold;">Total Amount</td>
             <td style="padding:10px 16px;">৳${totalPrice.toFixed(2)}</td>
@@ -114,12 +114,9 @@ async function sendOrderConfirmation(
   }
 }
 
-
-
-
 const statusMeta: Record<
   string,
-  { emoji: string, title: string, message: string; color: string }
+  { emoji: string; title: string; message: string; color: string }
 > = {
   PLACED: {
     emoji: "🧾",
@@ -144,16 +141,13 @@ const statusMeta: Record<
   CANCELLED: {
     emoji: "❌",
     title: "Order Cancelled",
-    message: "Your order has been cancelled. If this was unexpected, please contact support.",
+    message:
+      "Your order has been cancelled. If this was unexpected, please contact support.",
     color: "#dc2626",
   },
 };
 
-function buildOrderStatusHtml(
-  name: string,
-  orderId: string,
-  status: string,
-) {
+function buildOrderStatusHtml(name: string, orderId: string, status: string) {
   const meta = statusMeta[status] || {
     emoji: "📬",
     title: "Order Update",
@@ -182,9 +176,10 @@ function buildOrderStatusHtml(
             <td style="padding:10px 16px;font-weight:bold;width:130px;">Order ID</td>
             <td style="padding:10px 16px;word-break:break-all;">${orderId}</td>
           </tr>
+         
           <tr>
             <td style="padding:10px 16px;font-weight:bold;">Status</td>
-            <td style="padding:10px 16px;">${meta.title}</td>
+            <td style="padding:10px 16px;">${status}</td>
           </tr>
         </table>
       </td>
@@ -224,9 +219,3 @@ export const emailService = {
   sendOrderConfirmation,
   sendOrderStatus, // 👈 নতুন export যোগ করুন
 };
-
-
-
-
-
-
